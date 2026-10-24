@@ -1,0 +1,88 @@
+:root {
+    --ink: #1f2a33;
+    --ink-2: #4a5966;
+    --ink-3: #7b8994;
+    --paper: #ffffff;
+    --tint: #eef2f4;
+    --rule: #dde3e7;
+    --slate: #2c3a47;
+    --teal: #2e8c78;
+    --code-bg: #f4f6f8;
+    --measure: 680px;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: #e6ebee;
+        --ink-2: #b5c1c9;
+        --ink-3: #85939d;
+        --paper: #161d23;
+        --tint: #1e272e;
+        --rule: #2b353d;
+        --slate: #e6ebee;
+        --teal: #6fd1ba;
+        --code-bg: #1e272e;
+    }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 19px/1.65 Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+}
+a { color: var(--teal); text-underline-offset: 3px; }
+header.site, footer.site, main { max-width: var(--measure); margin: 0 auto; padding: 0 20px; }
+header.site {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 28px; padding-bottom: 28px;
+    font: 600 15px/1 -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+header.site .brand { display: flex; align-items: center; gap: 10px; color: var(--slate); text-decoration: none; font-size: 17px; }
+header.site nav a { margin-left: 20px; color: var(--ink-2); text-decoration: none; }
+header.site nav a:hover { color: var(--teal); }
+footer.site {
+    margin-top: 80px; padding-top: 24px; padding-bottom: 48px; border-top: 1px solid var(--rule);
+    font: 14px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif; color: var(--ink-3);
+}
+footer.site p { margin: 4px 0; }
+footer.site a { color: var(--ink-2); }
+
+h1, h2, h3 { font-family: -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif; color: var(--slate); line-height: 1.2; }
+h1 { font-size: 40px; letter-spacing: -0.8px; margin: 8px 0 16px; }
+h2 { font-size: 26px; letter-spacing: -0.3px; margin: 52px 0 12px; }
+h3 { font-size: 20px; margin: 36px 0 8px; }
+
+.home .intro { padding: 24px 0 8px; }
+.home .intro h1 { font-size: 44px; max-width: 14em; }
+.home .intro p { color: var(--ink-2); }
+.home h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-3); margin-top: 48px; }
+.posts { list-style: none; padding: 0; margin: 0; }
+.posts li { border-top: 1px solid var(--rule); }
+.posts a { display: block; padding: 22px 0; text-decoration: none; color: inherit; }
+.posts .date { display: block; font: 13px/1 -apple-system, system-ui, sans-serif; color: var(--ink-3); margin-bottom: 8px; }
+.posts .t { display: block; font: 600 22px/1.3 -apple-system, system-ui, sans-serif; color: var(--slate); }
+.posts a:hover .t { color: var(--teal); }
+.posts .d { display: block; color: var(--ink-2); margin-top: 6px; font-size: 17px; }
+.empty { color: var(--ink-3); font-style: italic; }
+
+.post .meta { font: 14px/1 -apple-system, system-ui, sans-serif; color: var(--ink-3); margin: 24px 0 0; }
+.post .disclosure { font-size: 15px; color: var(--ink-3); margin: 0 0 28px; }
+.post img { max-width: 100%; height: auto; border-radius: 10px; display: block; margin: 28px auto 8px; }
+.post img.cover { margin-top: 0; }
+.post img + em, .post p > img + br + em { display: block; text-align: center; font-size: 15px; color: var(--ink-3); }
+.post blockquote { margin: 28px 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--teal); color: var(--ink-2); }
+.post hr { border: 0; border-top: 1px solid var(--rule); margin: 48px 0; }
+code { font: 0.84em/1.5 "SF Mono", ui-monospace, Menlo, Consolas, monospace; background: var(--code-bg); padding: 2px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 18px 20px; border-radius: 10px; overflow-x: auto; font-size: 15px; line-height: 1.55; }
+pre code { background: none; padding: 0; font-size: inherit; }
+table { width: 100%; border-collapse: collapse; font: 15px/1.45 -apple-system, system-ui, sans-serif; margin: 24px 0; display: block; overflow-x: auto; }
+th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { color: var(--ink-3); font-weight: 600; }
+
+@media (max-width: 600px) {
+    body { font-size: 18px; }
+    h1, .home .intro h1 { font-size: 32px; }
+    h2 { font-size: 23px; }
+    header.site nav a { margin-left: 14px; }
+}
