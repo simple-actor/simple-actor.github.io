@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to get the email of every dentist in Miami from Google Maps</title>
+<meta name="description" content="Google Maps lists 182 dentists for one Miami search and shows an email for none of them. One run found 81 addresses in five minutes for 31 cents. The code, the output, and where it falls short.">
+<link rel="canonical" href="https://simple-actor.github.io/email-every-dentist-miami-google-maps/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to get the email of every dentist in Miami from Google Maps">
+<meta property="og:description" content="Google Maps lists 182 dentists for one Miami search and shows an email for none of them. One run found 81 addresses in five minutes for 31 cents. The code, the output, and where it falls short.">
+<meta property="og:url" content="https://simple-actor.github.io/email-every-dentist-miami-google-maps/">
+<meta property="og:image" content="https://simple-actor.github.io/email-every-dentist-miami-google-maps/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-24">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to get the email of every dentist in Miami from Google Maps","description":"Google Maps lists 182 dentists for one Miami search and shows an email for none of them. One run found 81 addresses in five minutes for 31 cents. The code, the output, and where it falls short.","datePublished":"2026-10-24","url":"https://simple-actor.github.io/email-every-dentist-miami-google-maps/","image":"https://simple-actor.github.io/email-every-dentist-miami-google-maps/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 24, 2026</p>
+<h1>How to get the email of every dentist in Miami from Google Maps</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="Every dentist in Miami, with an email address. 182 practices, 81 emails, $0.31." width="1000" height="420">
+<p>Type &quot;dentists in miami fl&quot; into Google Maps and keep scrolling until it stops. The morning I wrote this, it stopped at 182 practices. Google gives you a name, a star rating, an address and a phone number for nearly every one, and a website for 162 of them.</p>
+<p>It gives you an email address for none. Maps has no field for one.</p>
+<p>The addresses exist. They sit on the practices&#39; own websites, and usually not on the home page. They&#39;re on the contact page, the &quot;meet the team&quot; page, or the footer of a page about implants. Collecting them means opening 162 websites and clicking around each one. That&#39;s an afternoon of copy and paste, or a scraper.</p>
+<p>I build and maintain web scrapers, and this is the one I built for exactly this job. It searches Google Maps, reads each business&#39;s own website for emails, phone numbers and social accounts, and hands back one row per business. Below is a real run on that Miami search: the code, what came back, what it cost, and the parts it gets wrong.</p>
+<p><img src="images/maps-vs-row.png" alt="A Google Maps listing next to the row the scraper returned for the same practice">
+<em>One practice from the run. Left: what its Maps listing shows. Right: what reading its website added.</em></p>
+<h2>The run</h2>
+<p>The scraper runs on Apify, so the code is a call to Apify&#39;s client. You need an Apify account and its API token.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+
+const run = await client
+    .actor(&#39;simple.actor/google-maps-leads&#39;)
+    .call({ queries: [&#39;dentists in miami fl&#39;], maxPlaces: 200 });
+
+const { items } = await client
+    .dataset(run.defaultDatasetId)
+    .listItems();
+const leads = items.filter((row) =&gt; row.email);
+</code></pre>
+<p><code>maxPlaces: 200</code> is the most it accepts and more than Google lists for a search, so in practice it means &quot;all of them&quot;. The full script writes the leads to a CSV, and there&#39;s a Python version that does the same; both are in <a href="https://github.com/simple-actor/google-maps-email-scraper">the repo</a>.</p>
+<p>The run took 5 minutes 12 seconds. Most of that was spent waiting on dentists&#39; websites, not on Google.</p>
+<h2>What came back</h2>
+<p>182 rows, one per practice, in the order Google ranks them. These are the first eight, exactly as they came back:</p>
+<p><img src="images/first-rows.png" alt="The first eight rows of output: practice name, rating, review count, email, and whether Instagram, Facebook and a contact form were found">
+<em>The first eight of 182 rows. The top-ranked practice publishes no email address, only phone numbers, social accounts and a form.</em></p>
+<p>Across all 182, 20 practices had no website on their listing. They come back with what Maps knows and a status that says so. Of the 162 websites, 144 gave at least one email, phone number or social account.</p>
+<p>81 gave an email address. 50 of those were on the practice&#39;s own domain, like <code>info@onedentalmiami.com</code>. Of the other 31, 19 were Gmail, Yahoo or Outlook addresses, which is normal for a small practice. 112 practices linked a Facebook page and 102 an Instagram account. 74 had a contact form, and the row carries its URL.</p>
+<p>Every row also has a <code>contactsStatus</code>, and it&#39;s the field to filter on, because an empty <code>email</code> can mean four different things. Here, 144 rows say <code>found</code>: the website gave an email, a phone number or a social account. 20 say <code>no_website</code>. 16 say <code>unreadable</code>, with the reason in <code>contactsError</code>. And 2 say <code>none_found</code>, meaning the website was read and publishes none of them.</p>
+<h2>Why it reads more than the home page</h2>
+<p>The scraper reads each home page plus up to three pages it links to, chosen for how likely they are to carry contact details: contact, about, team, imprint. I wanted to know what those extra pages are worth, so I ran the same search a second time reading the home page only.</p>
+<p><img src="images/home-vs-four-pages.png" alt="Bar chart: on the same 136 practices, the home page alone found 43 emails and 23 contact forms; reading up to four pages found 57 emails and 51 contact forms">
+<em>Only practices that appeared in both runs are counted, so the comparison is like for like.</em></p>
+<p>On the 136 practices both runs returned, the home page alone found 43 email addresses. Reading up to four pages found 57, a third more. Contact forms went from 23 to 51, which makes sense, since a form usually lives on the contact page. The extra pages cost time, 5 minutes 12 seconds against 2 minutes 31. They don&#39;t cost money, because the price is per business, not per page.</p>
+<h2>What it cost</h2>
+<p>The price is $0.0005 for each business, plus $0.0015 for each business whose website gave contacts. A website that publishes nothing, can&#39;t be read, or doesn&#39;t exist isn&#39;t charged that second part.</p>
+<p>For this run that&#39;s 182 × $0.0005 + 144 × $0.0015 = <strong>$0.31</strong>. That&#39;s 81 email addresses at under 0.4 cents each, with the phone numbers, social accounts and Place IDs of all 182 practices included.</p>
+<h2>Where it falls short</h2>
+<p>Sixteen websites couldn&#39;t be read. Eleven refused with a 403, seven of them bot checks that want proof the visitor is a browser. Three didn&#39;t answer at all, one was a dead link, and one served a challenge page. Those rows say <code>unreadable</code>, give the reason in <code>contactsError</code>, and still carry the phone and address from Maps.</p>
+<p>It doesn&#39;t run a browser. A site that draws its page with JavaScript after loading looks empty to it. Two sites here were read and gave nothing, which is either a practice that publishes no contact details or a site like that. From the row alone you can&#39;t tell which.</p>
+<p>The first address isn&#39;t always the right one. One practice&#39;s website still had the help address of the company that made its template sitting in the page, and that came first in <code>emails</code>; the practice&#39;s own Gmail address was second. It&#39;s one row in 81, but read the addresses before you send anything.</p>
+<p>Google&#39;s list moves. I ran the same search twice, minutes apart. The first run listed 182 practices, the second 181, and only 136 were in both. If you need every dentist in a city, split the search by neighbourhood (<code>dentists in brickell miami</code>, <code>dentists in coral gables fl</code>) and run it more than once. Within a run, a practice that two searches both find is returned once. Across runs, the <code>placeId</code> on every row is the key to deduplicate on.</p>
+<p>The yield depends on where you search. 81 of 182 practices here had an email address. When I tested &quot;zahnarzt berlin mitte&quot;, 20 out of 20 did, because German websites must publish an imprint with a contact address.</p>
+<p>An email address isn&#39;t permission to send. These are addresses practices publish so patients can reach them. Before you write to them, check the rules on unsolicited email where you are and where they are.</p>
+<hr>
+<p>The code is in <a href="https://github.com/simple-actor/google-maps-email-scraper">simple-actor/google-maps-email-scraper</a>, in Node and Python, and both write a CSV. The scraper is <a href="https://apify.com/simple.actor/google-maps-leads">Google Maps Leads Scraper</a> on Apify. Change the search to your trade and your town: &quot;plumbers in denver co&quot; works the same way.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
