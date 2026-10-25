@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to find the email address for a list of company websites (36 accountants in Manchester)</title>
+<meta name="description" content="36 Manchester accountancy firms' websites. The home page alone gave an email for 27, five pages per site gave 32, for 12 cents. What the extra pages are worth, and what they cost.">
+<link rel="canonical" href="https://simple-actor.github.io/find-email-address-list-of-websites-manchester-accountants/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to find the email address for a list of company websites (36 accountants in Manchester)">
+<meta property="og:description" content="36 Manchester accountancy firms' websites. The home page alone gave an email for 27, five pages per site gave 32, for 12 cents. What the extra pages are worth, and what they cost.">
+<meta property="og:url" content="https://simple-actor.github.io/find-email-address-list-of-websites-manchester-accountants/">
+<meta property="og:image" content="https://simple-actor.github.io/find-email-address-list-of-websites-manchester-accountants/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-25">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to find the email address for a list of company websites (36 accountants in Manchester)","description":"36 Manchester accountancy firms' websites. The home page alone gave an email for 27, five pages per site gave 32, for 12 cents. What the extra pages are worth, and what they cost.","datePublished":"2026-10-25","url":"https://simple-actor.github.io/find-email-address-list-of-websites-manchester-accountants/","image":"https://simple-actor.github.io/find-email-address-list-of-websites-manchester-accountants/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 25, 2026</p>
+<h1>How to find the email address for a list of company websites (36 accountants in Manchester)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="The home page gave me 27 email addresses. Five pages gave me 32. 36 firms, 32 with an email, $0.12 for the run." width="1000" height="420">
+<p>Is the home page enough? I had 39 websites of accountancy firms in Manchester, straight out of a Google Maps search, and I wanted an email address for each one. Reading only the home pages found one for 27 firms. Reading up to five pages per site found one for 32.</p>
+<p>That&#39;s five more firms for four times the price. Whether it&#39;s worth it depends on what you&#39;re doing with the list, so here are both runs, side by side, with every number from them.</p>
+<h2>The list</h2>
+<p>The websites came from one Google Maps search, &quot;accountants in manchester uk&quot;, 40 places deep. 39 of the 40 had a website on their listing. Maps listed one firm twice, once with its home page and once with its contact page, so the 39 addresses are 38 firms. 36 of them could be read, and every count below is out of those 36. The two that couldn&#39;t are near the end.</p>
+<p>That&#39;s the kind of list people actually have: a column in a spreadsheet, some of it home pages, some of it deep links with tracking parameters still on the end. I pasted it in as it was.</p>
+<h2>Two runs, one setting apart</h2>
+<p>I build and run a contact scraper on Apify that reads a business&#39;s website and returns its emails, phone numbers, contact form, social accounts and postal address, one row per site. Its main setting is <code>maxPagesPerSite</code>: how many of each site&#39;s pages it may read. At 1 it reads the page you gave it. At 5 it also reads up to four more of that site&#39;s pages, the ones its links make likeliest to carry contact details: the contact page, the about page, the team page.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/website-contacts&#39;).call({
+    urls: [&#39;ac-accounts.co.uk&#39;, &#39;rjf.uk.com&#39;, &#39;fft.co.uk&#39;],
+    maxPagesPerSite: 5, countryHint: &#39;GB&#39;,
+});
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const r of items) {
+    if (&#39;emails&#39; in r) console.log(r.domain, r.email);
+}
+</code></pre>
+<p><code>countryHint: &#39;GB&#39;</code> tells it to read &quot;0161 …&quot; as a UK number. The full script, which reads a file of websites and writes a CSV, and a Python version are in <a href="https://github.com/simple-actor/website-email-scraper">the repo</a>.</p>
+<p>The one-page run took 2 minutes 33 seconds and read 37 pages. The five-page run took 4 minutes 7 seconds and read 161, an average of 4.4 for each address it could read. 22 of the 36 firms used all five pages.</p>
+<p><img src="images/one-vs-five.png" alt="Bar chart comparing the home page only with up to five pages, of 36 firms: email 27 against 32, phone 32 against 35, postal address 20 against 24, contact form 8 against 24">
+<em>Firms whose website gave each detail, of the 36 that could be read. Grey is the home page only, teal is up to five pages.</em></p>
+<h2>What the extra pages found</h2>
+<p>Five firms gained an email address. Every one of them was on a page the first run never opened: <code>/get-in-touch/</code>, <code>/contact-us/</code> twice, <code>/contact</code> and <code>/about-us/</code>. No firm lost an address, and for the 27 that had one on the home page, the best address stayed the same.</p>
+<p>The bigger change was contact forms, from 8 firms to 24. A form sits on a contact page by nature, so reading the home page alone mostly misses it. Phone numbers went from 32 firms to 35, postal addresses from 20 to 24.</p>
+<p>The number of distinct addresses doubled, from 32 to 65. Don&#39;t read that as twice the leads. One firm&#39;s team page alone accounted for 15 of the new ones, each a named member of staff. In all, at least 20 of the 65 belong to named people.</p>
+<p><img src="images/rows.png" alt="A table of six real rows: domain, best email and the page it was found on, plus a site that could not be read">
+<em>Six rows from the five-page run, and one of the two sites that could not be read.</em></p>
+<p>The <code>email</code> field is the one to use. It&#39;s the single best address per site: on the firm&#39;s own domain, a general mailbox before a person&#39;s. Here, 21 of the 32 were <code>info@</code>, four <code>enquiries@</code> and three <code>hello@</code>. 28 of the 32 were on the domain of the website I gave, and the other four on another domain carrying the same firm&#39;s name.</p>
+<h2>What it cost</h2>
+<p>The price is $0.001 per run plus $0.00075 per page read, with Apify&#39;s platform costs included. A page that turns out not to exist isn&#39;t charged, and neither is a site that can&#39;t be read.</p>
+<p>The home-page run was $0.001 + 37 × $0.00075 = <strong>$0.029</strong>. The five-page run was $0.001 + 161 × $0.00075 = <strong>$0.122</strong>. The 40 places from Google Maps cost $0.02 on top. So the five extra email addresses cost about 9 cents, and the 16 extra contact forms came with them.</p>
+<h2>What it got wrong</h2>
+<p>Two sites could not be read. One answered with a bot check (&quot;Just a moment...&quot;), and the other link from Google Maps led to a 404. Both came back as rows with <code>error</code> set and no <code>emails</code> key at all, so they can&#39;t be mistaken for firms with no email. The README suggests switching to a residential proxy for the bot check. I didn&#39;t try that here.</p>
+<p>Four firms publish no email address anywhere the scraper looked. Each still had a phone number, and three had a contact form. That&#39;s an honest empty answer, not a miss, but it means 4 in 36 of these leads need a call or a form instead.</p>
+<p>The full <code>emails</code> list keeps whatever the pages printed, not only the firm&#39;s own mailboxes. One firm&#39;s privacy page gave the data protection regulator&#39;s address. Another firm&#39;s contact page had a different company&#39;s address in its text, and its home page carried a mailto link to <code>nfo@</code>, missing its i. None of these became the best <code>email</code>, but if you export every address, you&#39;ll be exporting these too.</p>
+<p>Two logos are a review widget&#39;s Google logo rather than the firm&#39;s own. Both came from the top of the page, which is where the scraper looks first. One firm&#39;s name came back as <code>A&amp;amp;C</code>, with the HTML entity still in it.</p>
+<p>On a list like this one, five pages didn&#39;t double the email addresses. The home page already had them for 27 firms out of 36. If you only need one address per firm and you&#39;re watching the cost, <code>maxPagesPerSite: 1</code> gets most of them. If you want contact forms, postal addresses, or the firms that hide their address on a contact page, read more pages.</p>
+<hr>
+<p>The code is in <a href="https://github.com/simple-actor/website-email-scraper">simple-actor/website-email-scraper</a>, in Node and Python. Both read a file of websites, one per line, and write a CSV with one row per site. The scraper is <a href="https://apify.com/simple.actor/website-contacts">Website Contact Scraper</a> on Apify. Put your own list in the file, and set <code>COUNTRY</code> to the two-letter code of the country your sites&#39; phone numbers are written for.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
