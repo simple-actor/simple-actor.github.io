@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to find Creative Commons photos big enough to print (26 of Lisbon's Tram 28)</title>
+<meta name="description" content="300 Google Images results for Lisbon's Tram 28 held 9 photos 3,000 px wide. Two filters found 26 with a Creative Commons label, for 1.7 cents. What came back wrong.">
+<link rel="canonical" href="https://simple-actor.github.io/creative-commons-photos-big-enough-to-print-lisbon-tram-28/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to find Creative Commons photos big enough to print (26 of Lisbon's Tram 28)">
+<meta property="og:description" content="300 Google Images results for Lisbon's Tram 28 held 9 photos 3,000 px wide. Two filters found 26 with a Creative Commons label, for 1.7 cents. What came back wrong.">
+<meta property="og:url" content="https://simple-actor.github.io/creative-commons-photos-big-enough-to-print-lisbon-tram-28/">
+<meta property="og:image" content="https://simple-actor.github.io/creative-commons-photos-big-enough-to-print-lisbon-tram-28/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-26">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to find Creative Commons photos big enough to print (26 of Lisbon's Tram 28)","description":"300 Google Images results for Lisbon's Tram 28 held 9 photos 3,000 px wide. Two filters found 26 with a Creative Commons label, for 1.7 cents. What came back wrong.","datePublished":"2026-10-26","url":"https://simple-actor.github.io/creative-commons-photos-big-enough-to-print-lisbon-tram-28/","image":"https://simple-actor.github.io/creative-commons-photos-big-enough-to-print-lisbon-tram-28/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 26, 2026</p>
+<h1>How to find Creative Commons photos big enough to print (26 of Lisbon's Tram 28)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="9 of 300 photos were 3,000 px wide. Two filters found 26 with a CC label. 26 images, 6 sites, $0.017 a search." width="1000" height="420">
+<p>26 photos of Lisbon&#39;s Tram 28, every one at least 3,000 pixels wide, every one carrying Google&#39;s Creative Commons label. One search, four requests to Google, 1.7 cents. That&#39;s what I ended up with. The way there is worth showing, because the obvious search gets almost none of them.</p>
+<p>3,000 pixels is about 25 cm across at 300 dots per inch, which is what a printer wants for a decent-sized print. Most of what Google Images shows you is nowhere near it.</p>
+<h2>The plain search</h2>
+<p>I build and run a Google Images scraper on Apify. It returns each result as a row: the full-size image address on the site that hosts it, its width and height as Google states them, the page it sits on, the site&#39;s name, the file size and the dominant colour.</p>
+<p>First I asked it for 300 results for &quot;lisbon tram 28&quot; with no filters at all. They came from 156 different sites, and the median width was 1,024 pixels. Only 9 of the 300 were 3,000 pixels wide or more, and nothing in a plain search says which of them anyone may reuse.</p>
+<h2>Two settings</h2>
+<p>The fix is two settings. <code>usageRights: &#39;creativeCommons&#39;</code> asks Google for its Creative Commons filter, the same one under Tools in the Images tab. <code>minWidth: 3000</code> drops every image narrower than that. Google&#39;s own Size filter has only large, medium and icon, so the floor is applied to each row&#39;s stated width after Google has answered.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/google-images&#39;).call({
+    queries: [&#39;lisbon tram 28&#39;],
+    usageRights: &#39;creativeCommons&#39;,
+    minWidth: 3000,
+});
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const r of items) console.log(r.imageWidth, r.pageUrl);
+</code></pre>
+<p>The full script, which writes a CSV, and a Python version are in <a href="https://github.com/simple-actor/google-images-scraper">the repo</a>.</p>
+<p><img src="images/narrowing.png" alt="Three searches for lisbon tram 28: no filter gave 300 images, 9 of them 3,000 px or wider, from 156 sites for $0.154; the Creative Commons label gave 185, 15 of them wide, from 43 sites for $0.097; the label and a 3,000 px floor gave 26 from 6 sites for $0.017">
+<em>Three runs of the same search. Grey is every image returned, teal the ones 3,000 px or wider.</em></p>
+<p>With the label alone, Google had 185 images, from 43 sites, and stopped there. Only 2 of them had been among the 300 unfiltered ones. The label doesn&#39;t trim the plain results, it brings back a different set, mostly from photo libraries and Wikimedia Commons. The median width was still 1,024, and 15 of the 185 were 3,000 pixels or wider.</p>
+<p>With the label and the floor together, the run read 4 pages from Google and kept 26 images from 6 sites: 13 from pxhere.com, 8 from Wikimedia Commons. The widest was 7,360 by 4,912. It took 107 seconds.</p>
+<p><img src="images/rows.png" alt="Six of the 26 rows: width and height, file size, dominant colour, domain and title. Four are Lisbon trams; a steam train&#39;s gauges and a street in Prague are not">
+<em>Six of the 26 rows. The last two passed both filters and aren&#39;t Lisbon.</em></p>
+<p>The <code>imageUrl</code> on each row is the original file, not Google&#39;s thumbnail. The Wikimedia ones point straight at <code>upload.wikimedia.org</code>, at 1.8 to 14.5 MB a file. <code>pageUrl</code> is the page the image sits on, which is where the licence is.</p>
+<h2>What it cost</h2>
+<p>The listing charges $0.0005 per image, $0.004 for each search that returned images, and $0.00005 for the run start, with Apify&#39;s platform costs included. A search Google has no images for isn&#39;t charged.</p>
+<p>The 26-image run came to 26 × $0.0005 + $0.004 + $0.00005 = <strong>$0.017</strong>. The 185-image run was $0.097, and the 300 unfiltered images $0.154. Narrower is cheaper, because you pay for the images you keep, not the pages read to find them.</p>
+<h2>Where it went wrong</h2>
+<p>Three of the 26 aren&#39;t Lisbon. One is an Instagram post about Porto. One is a red tram in Prague. One is a close-up of a steam train&#39;s gauges. 16 of the 26 titles name Lisbon or Tram 28. The other 10 are a photo library&#39;s keyword lists (&quot;tram, cable car, public transport&quot;) or say nothing at all, like the two from WordPress&#39;s photo directory, so I had to open them to tell.</p>
+<p>The Creative Commons label is Google&#39;s, not a licence. The Instagram post is the clearest case: I&#39;d want to see that licence written down before using it. Every row carries <code>pageUrl</code> so you can check, and you should, image by image.</p>
+<p>The same search doesn&#39;t come back the same twice. My first run with the label had 15 images 3,000 pixels wide. The run with the floor, a few minutes later, found 26, and only 15 of those had been in the first run. Google&#39;s first page alone came back with 50 images in one run and 100 in another. If you need everything, run it again and merge on <code>imageId</code>, which is Google&#39;s own ID for the image.</p>
+<p>And a high floor stops early on purpose. Each page from Google costs the same however many images pass, so with a floor set the search only goes on while it keeps at least 7 images for every page read. At 3,000 pixels this search kept 26 in 4 pages and ended on its own, short of the 100 the input allowed.</p>
+<hr>
+<p>The code is in <a href="https://github.com/simple-actor/google-images-scraper">simple-actor/google-images-scraper</a>, in Node and Python. Both take a search on the command line and write a CSV with one row per image. The scraper is <a href="https://apify.com/simple.actor/google-images">Google Images Scraper</a> on Apify. Put in your own subject, your town or your product, set <code>MIN_WIDTH</code> to what your print or your page needs, and keep <code>LICENCE=cc</code> if you mean to reuse what you find.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
