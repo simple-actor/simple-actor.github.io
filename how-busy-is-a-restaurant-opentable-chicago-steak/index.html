@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to tell how busy a restaurant is from OpenTable (50 steak restaurants in Chicago, ranked)</title>
+<meta name="description" content="OpenTable's &quot;steak&quot; search in Chicago, ranked by its own &quot;Booked N times today&quot;: the busiest of 50 was Italian, at 269, and listed 28th. One search, 69 seconds, 2.75 cents.">
+<link rel="canonical" href="https://simple-actor.github.io/how-busy-is-a-restaurant-opentable-chicago-steak/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to tell how busy a restaurant is from OpenTable (50 steak restaurants in Chicago, ranked)">
+<meta property="og:description" content="OpenTable's &quot;steak&quot; search in Chicago, ranked by its own &quot;Booked N times today&quot;: the busiest of 50 was Italian, at 269, and listed 28th. One search, 69 seconds, 2.75 cents.">
+<meta property="og:url" content="https://simple-actor.github.io/how-busy-is-a-restaurant-opentable-chicago-steak/">
+<meta property="og:image" content="https://simple-actor.github.io/how-busy-is-a-restaurant-opentable-chicago-steak/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-27">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to tell how busy a restaurant is from OpenTable (50 steak restaurants in Chicago, ranked)","description":"OpenTable's \"steak\" search in Chicago, ranked by its own \"Booked N times today\": the busiest of 50 was Italian, at 269, and listed 28th. One search, 69 seconds, 2.75 cents.","datePublished":"2026-10-27","url":"https://simple-actor.github.io/how-busy-is-a-restaurant-opentable-chicago-steak/","image":"https://simple-actor.github.io/how-busy-is-a-restaurant-opentable-chicago-steak/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 27, 2026</p>
+<h1>How to tell how busy a restaurant is from OpenTable (50 steak restaurants in Chicago, ranked)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="The busiest of 50 was Italian, booked 269 times, and OpenTable listed it 28th. 50 restaurants, 69 seconds, $0.0275 a search." width="1000" height="420">
+<p>At 10:37 on a Monday night, Chicago time, I searched OpenTable for &quot;steak&quot; in Chicago. The busiest of the 50 restaurants it gave back wasn&#39;t a steakhouse. It was Gibsons Italia, booked 269 times. The next two, STK and Fioretta, had 111 each. OpenTable had listed Gibsons Italia 28th and Fioretta 43rd.</p>
+<p>That number is on OpenTable&#39;s listings, in small type: &quot;Booked 269 times today&quot;. It&#39;s the cheapest honest measure of how busy a restaurant is that I know of. Nobody has to infer it. The restaurant&#39;s own listing states it.</p>
+<h2>Getting the number out</h2>
+<p>I build and run an OpenTable scraper on Apify. Give it a search and a city and it reads OpenTable&#39;s search page, which holds up to 50 restaurants, and returns one row for each: address, phone, coordinates, neighbourhood, cuisine, price band, rating, review count, and the booking figure as <code>recentReservationCount</code>. No OpenTable account, cookie or key.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/opentable-restaurants&#39;)
+    .call({ term: &#39;steak&#39;, city: &#39;Chicago&#39;, maxItems: 50 });
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+items.sort((a, b) =&gt;
+    b.recentReservationCount - a.recentReservationCount);
+for (const r of items) console.log(r.recentReservationCount, r.name);
+</code></pre>
+<p>The full script, which writes a CSV, and a Python version are in <a href="https://github.com/simple-actor/opentable-scraper">the repo</a>.</p>
+<p>The run took 69 seconds and returned 50 rows, every one with a phone number and a booking count. Between them they had been booked 2,796 times. The median was 53.</p>
+<p><img src="images/busiest.png" alt="The 12 busiest of the 50, as bars: Gibsons Italia 269, then STK Chicago and Fioretta at 111, Wildfire Oak Brook 110, Prime &amp; Provisions 107, down to Fogo de Chão Rosemont at 75, each with the position OpenTable listed it at and its rating">
+<em>The 12 busiest of the 50. Teal is a steakhouse. &quot;Listed&quot; is where the restaurant sat in OpenTable&#39;s own order.</em></p>
+<h2>Stars don&#39;t tell you who is full</h2>
+<p>The ratings ran from 3.9 to 4.9, a narrow band, and they said very little about bookings. STK Chicago had the lowest rating of all 50, 3.9, and was joint second busiest. The three rated 4.9 had 29, 42 and 55. Review counts said a bit more: Gibsons Italia&#39;s 6,158 is a lot, but Smith &amp; Wollensky had 9,965 reviews and 72 bookings.</p>
+<p><img src="images/rows.png" alt="Six rows from the search: Gibsons Italia 4.8 with 269 bookings, STK Chicago 3.9 with 111, Steak 48 4.9 with 55, Bazaar Meat 4.9 with 29, BLVD Steakhouse 4.3 with 6, and Kinzie Chophouse with 2 and a record type the scraper hasn&#39;t measured">
+<em>Six of the 50 rows. The last one needs reading twice.</em></p>
+<p>OpenTable&#39;s order didn&#39;t follow bookings either. Of the seven restaurants with 100 or more, only STK was in the first ten it listed. Gibsons Bar &amp; Steakhouse in Oak Brook, with 103, was 49th of 50. If you only look at the top of the page, you miss most of the busy rooms.</p>
+<h2>Watching the same places</h2>
+<p>To track restaurants over time you don&#39;t want a search at all. You want the same list every time. Give the scraper <code>restaurantIds</code> and it reads each restaurant&#39;s own OpenTable page instead, which carries the same record. I took ten of the Chicago IDs and read them twice: at 10:39 pm on Monday, and again at 12:06 am on Tuesday, just after Chicago&#39;s midnight.</p>
+<p>Despite the &quot;today&quot; in the label, nothing reset. Not one of the ten dropped to zero, or anywhere near it. Gibsons Italia went from 269 to 264, Fioretta from 111 to 117, Prime &amp; Provisions from 107 to 112. Three didn&#39;t move at all. The figure behaves like a rolling count over the last stretch of time, not a tally since midnight, so compare a restaurant with itself at the same hour and weekday rather than waiting for a daily zero.</p>
+<p><img src="images/midnight.png" alt="Ten restaurants read at 10:39 pm Monday and 12:06 am Tuesday, Chicago time: Gibsons Italia 269 then 264, STK 111 and 111, Fioretta 111 then 117, Prime &amp; Provisions 107 then 112, the rest within two either way, Kinzie Chophouse 2 and 2">
+<em>The same ten restaurants read by ID, either side of midnight in Chicago.</em></p>
+<h2>What it cost</h2>
+<p>The listing charges $0.0125 a run and $0.0003 a restaurant, with Apify&#39;s platform costs included. The search came to $0.0125 + 50 × $0.0003 = <strong>$0.0275</strong>. Each run of the ten IDs was $0.0125 + 10 × $0.0003 = $0.0155, and the two took 6 seconds and 39 seconds. The start charge isn&#39;t made if the search page couldn&#39;t be read.</p>
+<h2>What the count won&#39;t tell you</h2>
+<p>Kinzie Chophouse is the row that needs care. It shows 2 bookings, which reads like an empty room, but its record type is <code>OTConnectPlus</code>, not the <code>GuestCenter</code> every other row carries. The scraper hasn&#39;t measured that type, so it says <code>isBookable: null</code> rather than guess. Check <code>restaurantType</code> before you treat a low number as a quiet restaurant.</p>
+<p>The search is OpenTable&#39;s, not mine. &quot;Steak&quot; in Chicago brought back 21 places that aren&#39;t steakhouses (8 Italian, 6 American, 3 seafood, 4 others) and 17 outside the city itself, 9 of them in Oak Brook. Filter on <code>cuisine</code> and <code>city</code> if you want only steakhouses in Chicago.</p>
+<p>One search is one page, so it stops at 50. A whole city&#39;s restaurants take several searches, by cuisine or by neighbourhood.</p>
+<hr>
+<p>The code is in <a href="https://github.com/simple-actor/opentable-scraper">simple-actor/opentable-scraper</a>, in Node and Python. Both take a search and a city on the command line and write a CSV, busiest first, or take <code>IDS=</code> for a fixed list. The scraper is <a href="https://apify.com/simple.actor/opentable-restaurants">OpenTable Scraper</a> on Apify. Put in your own cuisine and your own town, and if you run it on a schedule, read the same IDs at the same hour each week.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
