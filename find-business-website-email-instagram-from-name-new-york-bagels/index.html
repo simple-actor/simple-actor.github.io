@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to find a business's website, email and Instagram from just its name (8 New York bagel shops)</title>
+<meta name="description" content="Eight bagel shop names in, eight rows out. Google rated all 8, the websites gave 3 emails, 4 Instagram accounts came back with follower counts. 5 minutes 51 seconds, 15.9 cents.">
+<link rel="canonical" href="https://simple-actor.github.io/find-business-website-email-instagram-from-name-new-york-bagels/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to find a business's website, email and Instagram from just its name (8 New York bagel shops)">
+<meta property="og:description" content="Eight bagel shop names in, eight rows out. Google rated all 8, the websites gave 3 emails, 4 Instagram accounts came back with follower counts. 5 minutes 51 seconds, 15.9 cents.">
+<meta property="og:url" content="https://simple-actor.github.io/find-business-website-email-instagram-from-name-new-york-bagels/">
+<meta property="og:image" content="https://simple-actor.github.io/find-business-website-email-instagram-from-name-new-york-bagels/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-28">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to find a business's website, email and Instagram from just its name (8 New York bagel shops)","description":"Eight bagel shop names in, eight rows out. Google rated all 8, the websites gave 3 emails, 4 Instagram accounts came back with follower counts. 5 minutes 51 seconds, 15.9 cents.","datePublished":"2026-10-28","url":"https://simple-actor.github.io/find-business-website-email-instagram-from-name-new-york-bagels/","image":"https://simple-actor.github.io/find-business-website-email-instagram-from-name-new-york-bagels/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 28, 2026</p>
+<h1>How to find a business's website, email and Instagram from just its name (8 New York bagel shops)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="8 New York bagel shops, names only. A name and a neighbourhood in; Google's rating, the website's email and the Instagram count out. 8 businesses, 4 Instagram counts, $0.020 each." width="1000" height="420">
+<p>What can you learn about a business if all you have is its name? I typed eight New York bagel shops into a scraper, each as a name and a neighbourhood, &quot;Murray&#39;s Bagels Greenwich Village New York&quot; and so on, and nothing else. No website, no Maps link, no handles.</p>
+<p>Eight rows came back in 5 minutes 51 seconds. Every one had a Google rating and a phone number. Seven had a website. Two had an email address on it, and two more only a contact form. Four had an Instagram account, read for its follower count and its three latest posts. A caller would pay 15.9 cents for the lot.</p>
+<p>Three of the eight rows had something wrong in them, too, and those are worth as much of your attention as the good ones.</p>
+<h2>One row, three sources</h2>
+<p>I build and run a business profile scraper on Apify. Each name goes through three steps. First a Google search, whose knowledge panel holds the rating, review count, category, address, phone and website. Then the website itself, read for every email, phone number, contact form and social link it publishes. Then each linked social account, opened and read for followers and the latest posts. It all comes back as one row per business.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const queries = [
+    &#39;Ess-a-Bagel Third Avenue New York&#39;,
+    &quot;Murray&#39;s Bagels Greenwich Village New York&quot;,
+];
+const run = await client.actor(&#39;simple.actor/business-profile&#39;)
+    .call({ queries, maxSocialProfiles: 3 });
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const b of items) console.log(b.name, b.email, b.phone);
+</code></pre>
+<p>The neighbourhood matters. A bare name in a big city often matches the wrong branch, and one of my eight shows what that looks like.</p>
+<p><img src="images/rows.png" alt="A table of the eight shops: Google rating and review count, website, email, phones on the website, and the social accounts read">
+<em>What came back for each name. Instagram follower counts as the rows carried them.</em></p>
+<h2>What the names turned into</h2>
+<p>Google was the strongest part. All 8 searches found a knowledge panel, all 8 had a rating and a phone number, and 7 had an address. Six of the eight had a review count, 14,885 reviews between them, from Ess-a-Bagel&#39;s 154 to Russ &amp; Daughters&#39; 4,826.</p>
+<p>The websites gave less. Six of the seven sites could be read, 21 pages in all. Murray&#39;s Bagels publishes <code>info@murraysbagels.com</code>, and Black Seed Bagels two role addresses, <code>catering@</code> and <code>joinus@</code>. Ess-a-Bagel and Tompkins Square Bagels publish no address but have a contact form, and the row says where it is in <code>contactFormUrl</code>. Five sites had phone numbers, 21 between them. Black Seed&#39;s had 9, all of them on the page for its Nolita shop.</p>
+<p>The social step read 9 accounts on 4 businesses. Instagram came back for all four, from Murray&#39;s 13,027 followers to Black Seed&#39;s 91,506. Ess-a-Bagel also had TikTok, at 577 followers. Every Instagram and TikTok account had posted within the last week, and each row carries the three latest posts with their text, link and date.</p>
+<p>Ess-a-Bagel also linked a LinkedIn page, its fourth account. With <code>maxSocialProfiles</code> at 3 it came back as a link and a handle, not read. That setting is a ceiling on the slowest and dearest part of the run, so a list of hundreds of businesses can&#39;t run away from you.</p>
+<h2>What it cost</h2>
+<p>This scraper charges $0.01 a business. It then calls one reader per website and per social account, and each of those bills its own listed price to the same caller. For these eight, at the prices listed on 28 October 2026, that came to $0.15875:</p>
+<p><img src="images/cost.png" alt="Bar chart of the cost by part: this scraper $0.08, Instagram $0.032, Facebook $0.024, websites $0.0217, TikTok $0.001">
+<em>Where the 15.9 cents went. Instagram, at $0.008 a profile, is the dearest account to read.</em></p>
+<p>That&#39;s about 2 cents a business. Instagram is the line to watch: four profiles cost $0.032, more than all six websites. Turn the social step off with <code>includeSocialProfiles: false</code> and these eight would have cost $0.10175, the place record and the website contacts only.</p>
+<h2>Three rows that need a second look</h2>
+<p><strong>Liberty Bagels.</strong> I asked for the Midtown shop. Google&#39;s panel gave an address at 32 Broadway, New York, NY 10004, which is in the Financial District, nowhere near Midtown. It found no website, gave no review count, and the row&#39;s <code>name</code> is my own query because the panel didn&#39;t title the business. My search wasn&#39;t specific enough. A street name would have fixed it.</p>
+<p><strong>Absolute Bagels.</strong> Google lists its website as a <code>rebrand.ly</code> short link, and the link answered 404. The row says so in <code>notes</code>, and has no email, no site phones and no social accounts as a result. Its <code>category</code> reads &quot;More info&quot;, which is a button label on Google&#39;s panel, not a category. Black Seed&#39;s row has the same &quot;More info&quot;.</p>
+<p><strong>Russ &amp; Daughters.</strong> The website was found and four of its pages were read, and the row came back with no email, no phone from the site and no social accounts, with nothing in <code>notes</code> to say why. Google&#39;s phone number is still on the row. Treat an empty website section with an empty <code>notes</code> as &quot;nothing found&quot;, not as &quot;nothing there&quot;.</p>
+<p>Smaller things. Tompkins Square Bagels&#39; row has no review count, and its <code>name</code> is my query, the same panel gap as Liberty&#39;s. Black Seed&#39;s website gave a postal address for its Rockefeller Plaza shop rather than Nolita&#39;s: the site&#39;s own markup names that one. Facebook pages come back with their latest posts but no follower count, and the row says so; one of them came back with a display name that wasn&#39;t the shop&#39;s. Instagram posts come back without like counts. And each Instagram account carries a follower count next to a note saying Instagram publishes none to a logged-out reader. The number is what came back; the note contradicts it. I&#39;d check one by hand before quoting them anywhere.</p>
+<h2>Making it yours</h2>
+<p>The input is a list of names with a place on each. Swap the bagel shops for the gyms in your town, the dentists on your sales list, the competitors you watch. Put the street in when a chain has several branches. If you already have the websites, pass them as <code>websites</code> instead and the Google step is skipped. And if all you need is the phone and the email, turn the social step off and save the Instagram money.</p>
+<p>The full script, in Node and Python, writes a CSV with one column per platform and is in the <a href="https://github.com/simple-actor/business-email-and-social-finder">example repo on GitHub</a>. The scraper is <a href="https://apify.com/simple.actor/business-profile">Business Profile Scraper on Apify</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
