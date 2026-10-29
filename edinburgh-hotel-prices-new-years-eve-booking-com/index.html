@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How much more do Edinburgh hotels cost on New Year's Eve? (Booking.com prices for the same hotels, two weeks apart)</title>
+<meta name="description" content="Edinburgh on Booking.com, one night for two. On New Year's Eve 140 places were left and the same 32 hotels cost a median 5.2 times what they cost on 14 January.">
+<link rel="canonical" href="https://simple-actor.github.io/edinburgh-hotel-prices-new-years-eve-booking-com/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How much more do Edinburgh hotels cost on New Year's Eve? (Booking.com prices for the same hotels, two weeks apart)">
+<meta property="og:description" content="Edinburgh on Booking.com, one night for two. On New Year's Eve 140 places were left and the same 32 hotels cost a median 5.2 times what they cost on 14 January.">
+<meta property="og:url" content="https://simple-actor.github.io/edinburgh-hotel-prices-new-years-eve-booking-com/">
+<meta property="og:image" content="https://simple-actor.github.io/edinburgh-hotel-prices-new-years-eve-booking-com/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-29">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How much more do Edinburgh hotels cost on New Year's Eve? (Booking.com prices for the same hotels, two weeks apart)","description":"Edinburgh on Booking.com, one night for two. On New Year's Eve 140 places were left and the same 32 hotels cost a median 5.2 times what they cost on 14 January.","datePublished":"2026-10-29","url":"https://simple-actor.github.io/edinburgh-hotel-prices-new-years-eve-booking-com/","image":"https://simple-actor.github.io/edinburgh-hotel-prices-new-years-eve-booking-com/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 29, 2026</p>
+<h1>How much more do Edinburgh hotels cost on New Year's Eve? (Booking.com prices for the same hotels, two weeks apart)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="The same hotels on New Year's Eve cost 5.2 times what they cost two weeks later. 140 places left on 31 December, 528 on 14 January, 32 hotels compared." width="1000" height="420">
+<p>The Novotel in Edinburgh&#39;s centre wants £66.67 for two people on the night of Thursday 14 January. On Thursday 31 December, New Year&#39;s Eve, the same hotel wants £428.57. Same hotel, same booking, two people, one night. That&#39;s 6.4 times the price.</p>
+<p>The Novotel isn&#39;t unusual. I asked Booking.com for every place in Edinburgh on both nights, two weeks apart, and matched them up. The 32 hotels that were bookable on both nights cost a median £399.93 on Hogmanay and £71.27 in January: 5.2 times as much.</p>
+<h2>Two searches and a join</h2>
+<p>I build and run a Booking.com scraper on Apify. Give it a destination and dates and it returns a row for every property Booking would sell you: name, Booking&#39;s own <code>hotelId</code>, property type, stars, review score and count, address, coordinates, and <code>price</code>, which is Booking&#39;s total for the whole stay. Every row also carries <code>priceBasis</code>, which says exactly what that total covers. Here it read &quot;total for 1 night, 2 adults, 1 room, as Booking quotes it&quot;. No Booking account and no key.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/booking-hotels&#39;).call({
+    queries: [&#39;Edinburgh&#39;], currency: &#39;GBP&#39;, adults: 2,
+    checkIn: &#39;2026-12-31&#39;, checkOut: &#39;2027-01-01&#39;, maxHotels: 300,
+});
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const h of items) console.log(h.price, h.name, h.hotelId);
+</code></pre>
+<p>I ran that twice on 29 October 2026, once for each night, and joined the two lists on <code>hotelId</code>. The New Year&#39;s Eve search took 6.5 seconds, the January one 16.5.</p>
+<p><img src="images/rows.png" alt="The first six rows for New Year&#39;s Eve in Booking&#39;s order: CODE The Court hostel £325.25, Mercure Edinburgh Haymarket £415.08, ibis Edinburgh Centre South Bridge £369.84, Britannia Edinburgh Hotel £308.73, ibis Styles St Andrew Square £427.78, Roomzzz Edinburgh £499.17">
+<em>The first six New Year&#39;s Eve rows, with their positions, review scores and prices as Booking gave them.</em></p>
+<h2>Most of the city is already gone</h2>
+<p>The first thing the runs show is how little is left. Without dates, Booking lists 2,037 properties in Edinburgh. For one night on 14 January, 528 of them were bookable. For New Year&#39;s Eve, two months ahead, 140 were.</p>
+<p><img src="images/left.png" alt="Bars: 2,037 listed in Edinburgh with no dates, 528 bookable on Thursday 14 January with a median of £139, 140 bookable on Thursday 31 December with a median of £421">
+<em>Booking&#39;s own count, <code>totalResults</code>, for each search. The rest weren&#39;t offered for that night at all.</em></p>
+<p>Of those 140, nothing was under £150. The cheapest was a guest house at £157.14, and the cheapest hotel was The Abbey Residence at £194.88. On 14 January, 86 of the 131 hotels were under £100, and the cheapest place in the city was a hostel at £23.81. The median across every kind of place went from £139.02 to £421.43.</p>
+<h2>The same hotels, two weeks apart</h2>
+<p>A median over two different sets of places can mislead, because the cheap ones may simply have sold out. So I took only the properties that appeared on both nights. There were 113, and the median one cost 3.92 times as much on New Year&#39;s Eve.</p>
+<p>Hotels went up the most. The 32 hotels on both lists had a median multiple of 5.2. Apartments, which are the biggest group, had 2.8, and six of them charged exactly the same on both nights.</p>
+<p><img src="images/same.png" alt="Thirteen hotels as dumbbells from the 14 January price to the 31 December price: ibis budget Edinburgh Park £204 at 6.1 times, Delta Hotels by Marriott £222 at 4.6, Britannia Edinburgh Hotel £309 at 8.6, Holiday Inn Express City Centre £371 at 6.6, Sheraton Grand £391 at 2.6, Mercure Haymarket £415 at 5.6, ibis Styles St Andrew Square £428 at 4.6, Novotel £429 at 6.4, InterContinental The George £542 at 4.4, Kimpton Charlotte Square £571 at 4.4, Virgin Hotels £571 at 4.2, The Glasshouse £622 at 5.8, W Edinburgh £630 at 3.5">
+<em>Thirteen well-known hotels, matched on <code>hotelId</code>. The January dot is teal, New Year&#39;s Eve dark.</em></p>
+<p>The budget hotels moved furthest. Britannia Edinburgh Hotel went from £35.71 to £308.73, 8.6 times. ibis budget Edinburgh Park went from £33.44 to £204.08. The five-star hotels started higher and rose less: the Sheraton Grand from £147.81 to £390.78, 2.6 times, and the W from £178.52 to £629.59. The extremes were 100 Princes Street at £2,458.73 against £252.98, and Stay Central Hotel at £726.66 against £59.96, 12.1 times.</p>
+<p>So a cheap hotel in January is no guide to a cheap hotel on Hogmanay. On New Year&#39;s Eve the gap between a budget room and a five-star one narrows: in January the Sheraton cost 4.4 times the ibis budget, on New Year&#39;s Eve 1.9 times.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.0015 for each property it returns, and nothing for a search that can&#39;t be read. The New Year&#39;s Eve search returned 140 properties, $0.21. The January one returned 520, $0.78. The count without dates was one property, $0.0015. A caller would pay $0.99 for the whole comparison.</p>
+<p>Most of that is the January list, which I read in full so that every New Year&#39;s Eve property had a chance to match. If you only care about hotels, Booking&#39;s own filter <code>ht_id=204</code> in the <code>filters</code> field leaves out the flats and rooms, and you pay for fewer rows.</p>
+<h2>What the rows won&#39;t tell you</h2>
+<p><strong>Prices move while you watch.</strong> I ran the same New Year&#39;s Eve search again four minutes later to test the example scripts. CODE The Court, a hostel in Parliament Square, had gone from £325.25 to £477.25, and the ibis on South Bridge from £369.84 to £403.97. A minute after that, the count had dropped from 140 to 139, and January&#39;s from 528 to 516. Each row is what Booking quoted at <code>retrievedAt</code>, and for a night this busy that can be minutes old.</p>
+<p><strong>The row doesn&#39;t say which room.</strong> <code>price</code> is Booking&#39;s quote for the booking you asked for, but rooms aren&#39;t in the search results. On New Year&#39;s Eve the cheap rooms may be gone and the quote may be for a bigger one. The room list is on the hotel&#39;s own page, and every row links to it in <code>url</code>, but the scraper doesn&#39;t read it.</p>
+<p><strong>The missing places don&#39;t say why.</strong> 1,897 of the 2,037 weren&#39;t offered for New Year&#39;s Eve. Sold out, closed, or not selling a single night: the search doesn&#39;t say, it just leaves them out.</p>
+<p><strong>A full list can come back a few short.</strong> Booking counted 528 for January and the run returned 520 at a limit of 600. 27 of the New Year&#39;s Eve properties weren&#39;t in the January list, so they couldn&#39;t be compared.</p>
+<h2>Making it yours</h2>
+<p>Swap Edinburgh for your city and the two dates for the ones you&#39;re weighing: a festival weekend against the week after, a match day against a quiet Tuesday, the week your conference is on against the week before. Change <code>adults</code> and <code>rooms</code> to your own booking, because the prices are for exactly that. Run it every morning and you have a price history keyed on <code>hotelId</code>.</p>
+<p>The full script, in Node and Python, runs both searches at once, joins them and writes a CSV with the multiple for every property. It&#39;s in the <a href="https://github.com/simple-actor/booking-hotel-price-scraper">example repo on GitHub</a>. The scraper is <a href="https://apify.com/simple.actor/booking-hotels">Booking.com Scraper on Apify</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
