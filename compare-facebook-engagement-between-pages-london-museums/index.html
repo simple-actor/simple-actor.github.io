@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to compare Facebook engagement between pages (7 London museums, 56 posts)</title>
+<meta name="description" content="The latest 8 Facebook posts of 7 London museums. The National Gallery's typical post drew 1,331 reactions, comments and shares; the Science Museum's drew 15. Under 10 cents.">
+<link rel="canonical" href="https://simple-actor.github.io/compare-facebook-engagement-between-pages-london-museums/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to compare Facebook engagement between pages (7 London museums, 56 posts)">
+<meta property="og:description" content="The latest 8 Facebook posts of 7 London museums. The National Gallery's typical post drew 1,331 reactions, comments and shares; the Science Museum's drew 15. Under 10 cents.">
+<meta property="og:url" content="https://simple-actor.github.io/compare-facebook-engagement-between-pages-london-museums/">
+<meta property="og:image" content="https://simple-actor.github.io/compare-facebook-engagement-between-pages-london-museums/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-30">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to compare Facebook engagement between pages (7 London museums, 56 posts)","description":"The latest 8 Facebook posts of 7 London museums. The National Gallery's typical post drew 1,331 reactions, comments and shares; the Science Museum's drew 15. Under 10 cents.","datePublished":"2026-10-30","url":"https://simple-actor.github.io/compare-facebook-engagement-between-pages-london-museums/","image":"https://simple-actor.github.io/compare-facebook-engagement-between-pages-london-museums/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 30, 2026</p>
+<h1>How to compare Facebook engagement between pages (7 London museums, 56 posts)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="The National Gallery's typical post drew 1,331 reactions, comments and shares. The Science Museum's drew 15. 56 posts, 7 pages, photos 641 against videos 162." width="1000" height="420">
+<p>The first page I asked for was the wrong museum. I wanted London&#39;s Science Museum, typed <code>facebook.com/sciencemuseum</code>, and got eight posts about a polar vortex, a Halloween party and the Journal of Mammalogy. That address belongs to the Science Museum of Minnesota. London&#39;s is <code>facebook.com/sciencemuseumlondon</code>.</p>
+<p>It&#39;s the mistake worth checking for first when you compare your page with other pages: make sure each URL is the page you think it is. The rest of this post is what the comparison showed once the URLs were right.</p>
+<h2>The run</h2>
+<p>I build and run a Facebook page scraper on Apify. Give it public page URLs and it returns each page&#39;s latest posts, one row per post: <code>pageName</code>, <code>time</code>, <code>postType</code> (photo, video, link or text), <code>text</code>, <code>likes</code>, <code>comments</code>, <code>shares</code> and, for videos, <code>viewsCount</code>. <code>likes</code> counts every reaction, not only thumbs-up; the seven types are in their own columns, <code>reactionLikeCount</code> to <code>reactionCareCount</code>. No Facebook login and no cookies.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const urls = [&#39;https://www.facebook.com/tategallery&#39;];
+const run = await client.actor(&#39;simple.actor/facebook-page-posts&#39;)
+    .call({ startUrls: urls.map((url) =&gt; ({ url })), maxPosts: 8 });
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const p of items.filter((i) =&gt; !i.error))
+    console.log(p.pageName, p.likes + p.comments + p.shares);
+</code></pre>
+<p>On 30 October 2026 I gave it eight page addresses I took for London museums, with <code>maxPosts</code> at 8, the most it returns. The run took 74 seconds and came back with 57 rows: 8 posts from each of seven pages, Minnesota included, and one error row. The Science Museum&#39;s own page went into a second run, 22 seconds, 8 more posts.</p>
+<p><img src="images/rows.png" alt="Each museum&#39;s newest post as a row: National Gallery photo 283 likes 15 comments 24 shares, V&amp;A photo 641, 4, 115, British Museum photo 497, 11, 133, Tate photo 122, 0, 20, Science Museum video 8, 0, 1 with 238 views">
+<em>Five of the 56 rows, the newest from each of five museums, with the fields as the dataset names them.</em></p>
+<h2>The ranking, two ways</h2>
+<p>For each museum I added up reactions, comments and shares on every post and took the median, so one viral post doesn&#39;t carry a page. The National Gallery came first at 1,331 a post, then the V&amp;A at 1,086.5. Tate (454), the Natural History Museum (453.5) and the British Museum (393) sat together. Royal Museums Greenwich got 59 and the Science Museum 15.</p>
+<p>The British Museum has the most followers of the seven, 1.8 million, and came fifth. So I read each page&#39;s follower count too, with the scraper&#39;s <code>details</code> mode, and divided. Per 1,000 followers the V&amp;A leads with 1.09, the National Gallery has 0.89, and the British Museum drops to 0.22. Royal Museums Greenwich, with 132,000 followers, goes from sixth to fourth at 0.45.</p>
+<p><img src="images/rank.png" alt="Bars for seven museums: National Gallery 1,331 a post and 0.89 per 1,000 followers, V&amp;A 1,086.5 and 1.09, Tate 454 and 0.32, Natural History Museum 453.5 and 0.54, British Museum 393 and 0.22, Royal Museums Greenwich 59 and 0.45, Science Museum 15 and 0.06">
+<em>Median reactions + comments + shares per post, and the same median per 1,000 followers. Follower counts are Facebook&#39;s rounded figures.</em></p>
+<p>The single biggest post was the V&amp;A&#39;s on 23 October, a portrait of a sitter whose garment still survives: 7,656 reactions, 210 comments and 625 shares. Next came the National Gallery&#39;s 13 October post about its Jan van Eyck portraits, 6,425 in all, and the V&amp;A&#39;s opening of its Freddie Mercury show, 5,752. The British Museum&#39;s best was a video called &quot;Stop horsing around&quot;, with 52,692 views and 2,754 reactions, comments and shares.</p>
+<h2>Photos beat video, mostly</h2>
+<p>29 of the 56 posts were photos and 27 were videos. The median photo drew 641 reactions, comments and shares, the median video 162. That holds inside five of the seven museums. At the V&amp;A, photos had a median of 2,513 against 228.5 for its two videos.</p>
+<p><img src="images/types.png" alt="Photo against video median for each museum: National Gallery 2,080 vs 404, V&amp;A 2,513 vs 228.5, Tate 536.5 vs 155, Natural History Museum 620 vs 53, British Museum 641 (one photo) vs 346, Royal Museums Greenwich 19 vs 182, Science Museum 10 vs 21">
+<em>Median engagement by <code>postType</code>, each museum on its own. The number of posts is in brackets.</em></p>
+<p>The two exceptions are the two smallest pages. Royal Museums Greenwich&#39;s videos got a median of 182 against 19 for photos, and the Science Museum&#39;s 21 against 10. The British Museum posted seven videos and one photo, so its photo median is one post.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.003 a run and $0.001 for each post it returns. The first run returned 56 posts, $0.059, eight of them from Minnesota. The second returned 8, $0.011. The follower counts are $0.004 a page in <code>details</code> mode, and seven pages came to $0.028. The whole comparison cost a caller $0.098. Done right first time, it would have been one posts run at $0.059 and the same $0.028 for followers.</p>
+<h2>Where the numbers stop</h2>
+<p><strong>Eight posts is the most there is.</strong> Facebook serves a logged-out reader about eight posts in one request, and asking again returns the same eight, so <code>maxPosts</code> stops at 8. Eight posts reached back 9.1 days at Tate and 16 days at the Science Museum. A page that posts three times a day gives you three days. For a longer history, run it on a schedule and keep the rows.</p>
+<p><strong>Not every page answers.</strong> <code>facebook.com/museumoflondon</code> came back as an error row, <code>not_available</code>, which means private, restricted or removed. So did <code>facebook.com/londonmuseum</code>, my guess at a newer address. Error rows aren&#39;t charged, but the page is missing from the comparison.</p>
+<p><strong>Facebook rate-limits the read.</strong> When I tested the example scripts a few minutes later, Facebook refused one of two pages, then both, with &quot;Rate limit exceeded&quot;. Each came back as a <code>read_failed</code> row and the run still succeeded. Three tries over two minutes were refused; the same page read cleanly ten minutes later. If you track many pages, spread the runs out.</p>
+<p><strong>Follower counts are rounded.</strong> Facebook shows &quot;1M followers&quot; for the V&amp;A and gives no exact number, so the per-follower column is only as precise as that. The row says so in <code>followersAreExact</code>, which was false for all seven.</p>
+<p><strong>I read the follower counts one page per run.</strong> A <code>details</code> run over several pages stopped on its second or third page for me, with the rows read so far saved. One page at a time worked every time. I&#39;ve reported it.</p>
+<p><strong>A post can have no text at all.</strong> One Natural History Museum video had no caption, and its <code>title</code> and <code>text</code> both came back empty. The V&amp;A&#39;s 20 October post was a share; the row marks it with <code>isShare</code>.</p>
+<h2>Making it yours</h2>
+<p>Put your own page first in the list and your three or four nearest rivals after it: the other cafés on your street, the other councils in your county, the other brands on your shelf. Check each <code>pageName</code> against the page you meant. Then run it every week, and you have the median, the best post and the photo-against-video split for each of them, week by week.</p>
+<p>The full script, in Node and Python, ranks the pages and writes every post to a CSV. It&#39;s in the <a href="https://github.com/simple-actor/facebook-page-engagement-scraper">example repo on GitHub</a>. The scraper is <a href="https://apify.com/simple.actor/facebook-page-posts">Facebook Page Scraper on Apify</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
