@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to get a table at a booked-out New York restaurant on Resy (8 restaurants, 30 days)</title>
+<meta name="description" content="Resy's booking calendar for 8 hard New York tables, 30 days ahead. Carbone, Torrisi, 4 Charles and Tatiana had no open day for two. Misi had 25. $0.008 a check.">
+<link rel="canonical" href="https://simple-actor.github.io/get-table-booked-out-restaurant-resy-new-york/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to get a table at a booked-out New York restaurant on Resy (8 restaurants, 30 days)">
+<meta property="og:description" content="Resy's booking calendar for 8 hard New York tables, 30 days ahead. Carbone, Torrisi, 4 Charles and Tatiana had no open day for two. Misi had 25. $0.008 a check.">
+<meta property="og:url" content="https://simple-actor.github.io/get-table-booked-out-restaurant-resy-new-york/">
+<meta property="og:image" content="https://simple-actor.github.io/get-table-booked-out-restaurant-resy-new-york/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-10-31">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to get a table at a booked-out New York restaurant on Resy (8 restaurants, 30 days)","description":"Resy's booking calendar for 8 hard New York tables, 30 days ahead. Carbone, Torrisi, 4 Charles and Tatiana had no open day for two. Misi had 25. $0.008 a check.","datePublished":"2026-10-31","url":"https://simple-actor.github.io/get-table-booked-out-restaurant-resy-new-york/","image":"https://simple-actor.github.io/get-table-booked-out-restaurant-resy-new-york/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">October 31, 2026</p>
+<h1>How to get a table at a booked-out New York restaurant on Resy (8 restaurants, 30 days)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="Carbone, Torrisi, 4 Charles and Tatiana had no open day for two in the next 30 days. Misi had 25. 3 of 8 restaurants with any open day, 43 open days in all, $0.008 a run." width="1000" height="420">
+<p>Carbone had no table for two on any of the next 30 days. Its calendar on Resy showed 29 days sold out and one closed. Torrisi, Tatiana and 4 Charles Prime Rib looked the same. Misi, in Williamsburg, had a table on 25 of its 27 days.</p>
+<p>I read those calendars on the morning of 31 October 2026, eight New York restaurants in one run that took 21 seconds and cost 0.8 cents. This post is what they showed, and what &quot;available&quot; turned out to mean once I looked at the actual times.</p>
+<h2>The run</h2>
+<p>I build and run a Resy scraper on Apify. Give it Resy venue URLs, switch on <code>includeCalendar</code>, and each restaurant comes back as one row with Resy&#39;s day-by-day booking status for your party size: <code>calendar</code> (every day, marked <code>available</code>, <code>sold-out</code> or <code>closed</code>), <code>availableDates</code> and <code>availableDateCount</code>. No Resy account, no login.</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const url = &#39;https://resy.com/cities/new-york-ny/venues/lilia&#39;;
+const run = await client.actor(&#39;simple.actor/resy-availability&#39;)
+    .call({ startUrls: [{ url }], maxItems: 20, partySize: 2,
+        includeCalendar: true, calendarDays: 30 });
+const { items } = await client
+    .dataset(run.defaultDatasetId).listItems();
+for (const v of items) console.log(v.name, v.availableDates);
+</code></pre>
+<p>I gave it twelve URLs. Eight came back. Across those eight, 43 days had a table for two. Three restaurants held all 43.</p>
+<p><img src="images/calendar.png" alt="Resy&#39;s booking calendar for eight New York restaurants, 31 October to 29 November 2026, table for two. Misi 25 open days of 27, Lilia 17 of 27, I Sodi 1 of 13, Carbone 0 of 30, Torrisi 0 of 30, Tatiana 0 of 27, 4 Charles Prime Rib 0 of 20, Double Chicken Please 0 of 6">
+<em>Each square is a day in the restaurant&#39;s <code>calendar</code> field. Dashed squares are days past the end of the calendar Resy returned.</em></p>
+<p>Lilia had 17 open days and Misi 25. Both belong to the same group, which Resy names in <code>venueGroup</code>. I Sodi had one: that same evening. Carbone, Torrisi and Tatiana had none. Neither did 4 Charles Prime Rib, whose calendar stopped at 19 November, 20 days out, or Double Chicken Please, whose calendar was six days long.</p>
+<p>That length is worth reading on its own. I asked for 30 days at every restaurant, and Resy returned 30 for Carbone and Torrisi, 27 for Lilia, Misi and Tatiana, 20 for 4 Charles, 13 for I Sodi and 6 for Double Chicken Please. A day past the end of a restaurant&#39;s calendar isn&#39;t sold out; Resy just doesn&#39;t show it.</p>
+<h2>&quot;Available&quot; is not 8pm</h2>
+<p>The calendar said Misi was available on Saturday 7 November. So I ran the scraper again with <code>includeAvailability</code>, that date and a party of two, to get the actual tables. Misi had 13. Every one of them was lunch, between 11:30 and 14:30. Nothing for dinner.</p>
+<p>Wednesday 4 November looked better on the calendar for both Lilia and Misi. Each had 9 tables. Lilia&#39;s ran from 17:00 to 18:00 and then from 21:00 to 21:30, on the patio and at the bar. Misi&#39;s were at 17:00 and 17:15, then 21:00 to 21:30. Neither had a table between 6pm and 9pm.</p>
+<p><img src="images/times.png" alt="Open tables for two by start time. Misi Saturday 7 November, 13 tables between 11:30am and 2:30pm. Misi Wednesday 4 November, 9 tables at 5pm and 9 to 9:30pm. Lilia Wednesday 4 November, 9 tables between 5 and 6pm and 9 to 9:30pm. Carbone and Torrisi Saturday 7 November, none, with notify-list hours for lunch and dinner">
+<em>Each mark is one row in <code>slots</code>, from the <code>startTime</code> field. The grey bands are <code>notifyWindows</code>.</em></p>
+<p>So a calendar day marked <code>available</code> means at least one table, at some hour, in some part of the room. If you want 8pm, read the <code>slots</code> for the day you care about. Each slot carries its <code>startTime</code>, its <code>type</code> (Dining Room, Bar, Patio, Kitchen Counter) and <code>turnTimeSeconds</code>. At Lilia each table was held for two hours, 7,200 seconds. None of the 31 slots I read needed a deposit.</p>
+<h2>The table that opened while I watched</h2>
+<p>Five minutes after the first calendar run, I tested the example script on Lilia, I Sodi, Carbone and Torrisi. Lilia now had 18 open days, not 17. That evening, 31 October, had gone from <code>sold-out</code> to <code>available</code>. Somebody had cancelled.</p>
+<p>That&#39;s the real use for a booked-out restaurant: run the same check every few minutes and look for a day that changes. Each run of this check costs a tenth of a cent a restaurant. When nothing is open, Resy also says whether it will take you on its notify list: <code>notifyAvailable</code> was true at 7 of the 8 restaurants for the Saturday, with the hours it covers in <code>notifyWindows</code>. Double Chicken Please, whose calendar didn&#39;t reach that Saturday, offered none.</p>
+<h2>Two things I got wrong first</h2>
+<p><strong>My first run returned two restaurants out of twelve.</strong> <code>maxItems</code> defaults to 3, and it caps the URL list too, not only search results. One of the first three URLs didn&#39;t answer, so I got two rows. Set <code>maxItems</code> to at least the number of URLs you give it.</p>
+<p><strong>Four of my URLs left no row at all.</strong> Don Angie, Rezdora, Ci Siamo and Le B. Resy answers &quot;not found&quot; for those addresses, and the scraper treats that as &quot;not on Resy&quot; and writes nothing. I searched Resy for each name with the scraper&#39;s search mode, and it returned other restaurants: Don Don and Don Ceviche, Fedora and Rhodora. So either my addresses were wrong or those places don&#39;t take bookings on Resy. The scraper can&#39;t tell the two apart, so check that every URL you give it brings back a row. The example scripts print the ones that didn&#39;t.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.001 for each restaurant row it returns, $1.00 per 1,000, or $0.98 per 1,000 on Apify&#39;s Business plan and up. A URL that leaves no row costs nothing. The 30-day calendar for eight restaurants was 8 rows, $0.008. The Saturday check was another $0.008: I asked it to keep restaurants with no tables (<code>keepUnavailable</code>), so all eight came back and all eight were charged. Everything behind this post, the mistakes and the searches included, was 35 rows: $0.035.</p>
+<h2>Where it runs out</h2>
+<p><strong>Thirty days at most.</strong> For Carbone and Torrisi I asked for a calendar to 31 December. I got the same 30 days, to 29 November, and then only 25 December, marked <code>not available</code>. A run asking for December alone returned that one day. Whatever Resy holds beyond its window, it doesn&#39;t show it.</p>
+<p><strong>The calendar is per party size.</strong> Every number here is for two. A table for four is a different question; set <code>partySize</code> and run it again.</p>
+<p><strong>It reads availability, it doesn&#39;t book.</strong> Each slot comes with Resy&#39;s booking <code>token</code>, but booking is Resy&#39;s app and your account. The scraper tells you which day to open it on.</p>
+<p><strong>A day can change between runs.</strong> Lilia&#39;s evening opened up inside five minutes. Every row has a <code>scrapedAt</code> time, and a calendar is only true at that moment.</p>
+<h2>Making it yours</h2>
+<p>Swap in the Resy URLs of the places you&#39;ve been trying to get into, in your city, set <code>partySize</code> to the size of your group, and run it on a schedule. Keep each run&#39;s <code>availableDates</code> and compare with the last one. A new date is a cancellation. If you only care about dinner, follow up the new dates with <code>includeAvailability</code> and keep the slots after 7pm.</p>
+<p>The full script, in Node and Python, prints each restaurant&#39;s open days and writes every day of every calendar to a CSV. It&#39;s in the <a href="https://github.com/simple-actor/resy-table-finder">example repo on GitHub</a>. The scraper is <a href="https://apify.com/simple.actor/resy-availability">Resy Scraper on Apify</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
