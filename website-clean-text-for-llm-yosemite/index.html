@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to turn a website into clean text for an LLM (15 pages of Yosemite's park site)</title>
+<meta name="description" content="15 pages of Yosemite's park site were 842,006 characters of HTML and 78,433 characters of text, 9.3%. Read in 12 seconds for 3 cents, and the 17 sentences that came along anyway.">
+<link rel="canonical" href="https://simple-actor.github.io/website-clean-text-for-llm-yosemite/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to turn a website into clean text for an LLM (15 pages of Yosemite's park site)">
+<meta property="og:description" content="15 pages of Yosemite's park site were 842,006 characters of HTML and 78,433 characters of text, 9.3%. Read in 12 seconds for 3 cents, and the 17 sentences that came along anyway.">
+<meta property="og:url" content="https://simple-actor.github.io/website-clean-text-for-llm-yosemite/">
+<meta property="og:image" content="https://simple-actor.github.io/website-clean-text-for-llm-yosemite/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-01">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to turn a website into clean text for an LLM (15 pages of Yosemite's park site)","description":"15 pages of Yosemite's park site were 842,006 characters of HTML and 78,433 characters of text, 9.3%. Read in 12 seconds for 3 cents, and the 17 sentences that came along anyway.","datePublished":"2026-11-01","url":"https://simple-actor.github.io/website-clean-text-for-llm-yosemite/","image":"https://simple-actor.github.io/website-clean-text-for-llm-yosemite/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">November 1, 2026</p>
+<h1>How to turn a website into clean text for an LLM (15 pages of Yosemite's park site)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="842,006 characters of HTML. 78,433 of them were the page. 15 pages, 9.3% of the markup was text, $0.03 for the run." width="1000" height="420">
+<p>The Half Dome permit page on Yosemite&#39;s park site is 42,587 characters of HTML. The part a person actually reads, the rules, the lottery dates, the 300 hikers a day, is 6,844 characters. The other 35,743 are markup: menus, scripts, image markup and a footer.</p>
+<p>If you paste a page like that into a language model, or load it into a retrieval index, you pay for all 42,587 and the model has to find the 6,844 itself. Across the 15 visitor pages I read from <code>nps.gov/yose</code> this morning, the HTML came to 842,006 characters and the text to 78,433. That&#39;s 9.3%. Nine characters in every ten were not the page.</p>
+<p>This post is how I got the text out, what it cost, and what still came along that I didn&#39;t want.</p>
+<h2>Two runs: find the pages, then read them</h2>
+<p>I build and run a web page text scraper on Apify. It has two modes. <code>discover</code> reads one page and returns its text plus every link to the same site, each with the words that were clickable. <code>text</code> reads the pages you name and returns their text alone. It doesn&#39;t crawl. It reads what you give it and nothing else.</p>
+<p>So the first run was the park&#39;s home page in discover mode. It came back in one row with 2,342 characters of text and 50 links. 27 of them went into Yosemite&#39;s own pages, with anchors like &quot;Fees&quot;, &quot;Camping&quot;, &quot;Half Dome Permits&quot; and &quot;Current Conditions&quot;. 11 went elsewhere on nps.gov: the privacy policy, FOIA, the agency&#39;s FAQ. The other 12 were photos, and their anchor was the image&#39;s alt text: &quot;A waterfall flowing down a granite cliff.&quot;</p>
+<p>The anchor text is what makes the second step easy. I didn&#39;t have to guess that the fees page lives at <code>/planyourvisit/fees.htm</code>. I picked 15 visitor pages by their anchors and read them in text mode:</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const actor = client.actor(&#39;simple.actor/page-text-reader&#39;);
+const run = await actor.call({
+  urls: [&#39;https://www.nps.gov/yose/planyourvisit/fees.htm&#39;],
+  mode: &#39;text&#39;,
+});
+const ds = client.dataset(run.defaultDatasetId);
+for (const page of (await ds.listItems()).items) {
+  if (!(&#39;text&#39; in page)) continue; // never read, not empty
+  console.log(page.title, page.textLength);
+}
+</code></pre>
+<p>All 15 came back with status 200 in 11.9 seconds. None needed a browser: every row said <code>rendered: false</code>, which means the text was already in the HTML the server sent. The scraper only opens a browser when the served HTML turns out not to hold the page.</p>
+<p><img src="images/sizes.png" alt="The 15 pages ranked by the size of their HTML, each with its clean text beside it: Current Conditions 6.8k of 77k, Things To Do 3.0k of 65k, Frequently Asked Questions 10.0k of 51k, Basic Information 1.4k of 42k">
+<em>Served HTML against the text kept, page by page. Most pages were 50,000 to 65,000 characters of markup.</em></p>
+<p>The share of text moved a lot from page to page. The FAQ was the wordiest, 10,041 characters of text out of 51,163, almost 20%. Basic Information was the thinnest, 1,448 out of 42,427, 3.4%: most of that page is links to other pages. The median page held 5,529 characters of text, which is a comfortable size for one chunk of a retrieval index or one paste into a chat.</p>
+<h2>What a row looks like</h2>
+<p>Each page is one row: the address asked for, <code>loadedUrl</code> (where it ended up after any redirect), <code>statusCode</code>, <code>title</code>, <code>text</code>, <code>textLength</code>, <code>textTruncated</code>, <code>rendered</code> and <code>retrievedAt</code>. I also switched on <code>includeHtml</code> for this run, which adds the raw markup as <code>html</code>. That&#39;s where the 842,006 came from. You don&#39;t need it to get the text.</p>
+<p><img src="images/row.png" alt="One row for the Half Dome permit page: statusCode 200, textLength 6844, textTruncated false, rendered false, and the start of its text about when the cables are up">
+<em>The Half Dome row, and its text after the site banner and the page heading.</em></p>
+<p>The text is the page in full, not a summary. &quot;A maximum of 300 hikers are allowed (about 225 day hikers and 75 backpackers) each day&quot; is in there word for word, and so is the preseason lottery&#39;s window, &quot;March 1 through March 31&quot;. A full stop goes at the end of every heading and paragraph, so a heading doesn&#39;t run into the sentence under it.</p>
+<p>One field matters more than it looks. A page that couldn&#39;t be read comes back with an <code>error</code> and no <code>text</code> key at all. A page that loaded and genuinely had nothing on it has <code>text: &quot;&quot;</code>. That&#39;s why the code skips rows without <code>text</code> rather than rows with empty text: if you&#39;re filling an index, you don&#39;t want a failed fetch to look like a page with nothing to say.</p>
+<h2>What it cost</h2>
+<p>The listing charges $0.002 for each page read and $0.00005 a run as a start fee. The 15-page run was $0.03005, and the discover run before it $0.00205, so the whole site read came to $0.0321. A page that can&#39;t be read is never charged; a 404 is, because &quot;this page isn&#39;t there&quot; is an answer. A thousand pages cost $2.00 plus the start fee.</p>
+<h2>The sentences that came along</h2>
+<p>The scraper takes out navigation, headers, footers and cookie banners, and drops a line it has already seen on the same page. It doesn&#39;t compare one page with another. So whatever the site repeats on every page in a way that doesn&#39;t look like navigation stays in, once per page.</p>
+<p>On nps.gov that was 17 sentences. The &quot;.gov&quot; banner at the very top (&quot;Official websites use .gov. A .gov website belongs to an official government organization in the United States.&quot;), the text of an &quot;Exiting nps.gov&quot; notice with its &quot;Cancel&quot; button, and the park&#39;s footer: &quot;Contact Info.&quot;, &quot;Stay Connected.&quot;, &quot;Site Index.&quot;, &quot;Español.&quot;, the park&#39;s phone number. Every one of the 15 pages started with that banner.</p>
+<p><img src="images/repeated.png" alt="The 17 sentences that came back on all 15 pages: the .gov banner, the exit-link dialog and the park footer, about 439 characters a page">
+<em>About 439 characters a page, 8.4% of all the text the run returned.</em></p>
+<p>It&#39;s 8.4% of the text, and in a retrieval index it&#39;s worse than its size. Fifteen chunks that all open with the same five sentences about .gov websites look alike to a similarity search. The fix is a few lines of code: count how many pages each sentence appears on, and drop the ones that appear on all of them. The example repo does exactly that, and on the fees page it took 7,875 characters down to 7,436.</p>
+<p>Two smaller things. Where a link sat at the end of a sentence, a space was left before the full stop: &quot;the second Monday in October .&quot; And one heading on the permit page did run into its paragraph, &quot;Permits for Backpackers (including Camping in Little Yosemite Valley) Backpackers—including those who…&quot;, so the full stops aren&#39;t perfect either. Neither hurts a language model much, but don&#39;t expect typeset prose.</p>
+<p>The link list needs a filter too. Twelve of the home page&#39;s 50 links were <code>.jpg</code> files, and eleven left Yosemite for nps.gov&#39;s agency pages. Filter by anchor text and by path before you feed the list back in, or you&#39;ll pay $0.002 to read a photograph.</p>
+<h2>Make it your own site</h2>
+<p>The example repo, <a href="https://github.com/simple-actor/website-to-text-for-llm">website-to-text-for-llm</a>, takes a start page and a pattern for the anchor text, reads the matching pages and writes them to one <code>site.txt</code> with the repeated sentences gone, in Node and in Python. Point it at your own product&#39;s help centre with <code>&quot;pricing|billing|refund&quot;</code>, your council&#39;s site with <code>&quot;bins|parking|permits&quot;</code>, or a supplier&#39;s documentation with whatever you&#39;d search it for. The scraper is at <a href="https://apify.com/simple.actor/page-text-reader">apify.com/simple.actor/page-text-reader</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
