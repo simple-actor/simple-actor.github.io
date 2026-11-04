@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to get exact view counts for a YouTube channel's videos (120 videos from NASA, ESA, SpaceX and Blue Origin)</title>
+<meta name="description" content="YouTube's channel page showed 9.5M views for a SpaceX video that had 9,599,850. Exact views and likes for 120 videos from four space channels, for 14 cents.">
+<link rel="canonical" href="https://simple-actor.github.io/exact-youtube-view-counts-channel-videos-nasa-spacex/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to get exact view counts for a YouTube channel's videos (120 videos from NASA, ESA, SpaceX and Blue Origin)">
+<meta property="og:description" content="YouTube's channel page showed 9.5M views for a SpaceX video that had 9,599,850. Exact views and likes for 120 videos from four space channels, for 14 cents.">
+<meta property="og:url" content="https://simple-actor.github.io/exact-youtube-view-counts-channel-videos-nasa-spacex/">
+<meta property="og:image" content="https://simple-actor.github.io/exact-youtube-view-counts-channel-videos-nasa-spacex/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-04">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to get exact view counts for a YouTube channel's videos (120 videos from NASA, ESA, SpaceX and Blue Origin)","description":"YouTube's channel page showed 9.5M views for a SpaceX video that had 9,599,850. Exact views and likes for 120 videos from four space channels, for 14 cents.","datePublished":"2026-11-04","url":"https://simple-actor.github.io/exact-youtube-view-counts-channel-videos-nasa-spacex/","image":"https://simple-actor.github.io/exact-youtube-view-counts-channel-videos-nasa-spacex/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">November 4, 2026</p>
+<h1>How to get exact view counts for a YouTube channel's videos (120 videos from NASA, ESA, SpaceX and Blue Origin)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="YouTube says 9.5M views. The exact count is 9,599,850. 120 videos, 119 rounded down, $0.14." width="1000" height="420">
+<p>SpaceX&#39;s channel page says its Starship SN8 recap has 9.5M views. The exact count, read from the video&#39;s own page a few minutes later, was 9,599,850. That&#39;s 99,850 views the label leaves out, on one video.</p>
+<p>It matters as soon as you put two channels side by side. YouTube&#39;s channel pages round every count down, and they date every video with &quot;1y ago&quot; or &quot;2mo ago&quot;. For a quick look that&#39;s fine. For a spreadsheet that ranks videos, works out a like rate or plots uploads by month, it isn&#39;t.</p>
+<h2>Two runs, same 120 videos</h2>
+<p>I build and run a YouTube channel scraper on Apify. It reads a channel&#39;s latest videos, up to 30, from the page YouTube serves a logged-out visitor. With <code>includeVideoDetails</code> on it also opens each video&#39;s page for the exact view count, the like count, the description and the publish date.</p>
+<p>I picked four public space channels, @NASA, @EuropeanSpaceAgency, @SpaceX and @blueorigin, and ran them twice on the morning of 4 November: once with details off, once with them on. Here&#39;s the second in Node:</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/youtube-channel-videos&#39;)
+  .call({ handles: [&#39;@NASA&#39;, &#39;@EuropeanSpaceAgency&#39;, &#39;@SpaceX&#39;,
+          &#39;@blueorigin&#39;], maxVideos: 30, includeVideoDetails: true });
+const { items } = await client.dataset(run.defaultDatasetId)
+  .listItems();
+for (const v of items) {
+  if (v.error) continue; // a channel that couldn&#39;t be read
+  console.log(v.channelName, v.viewCount, v.likeCount, v.title);
+}
+</code></pre>
+<p>The details-off run took 24 seconds and returned 120 videos. The details-on run took 4 minutes, one extra request per video, and returned the same 120, every one with an exact view count and a like count.</p>
+<p><img src="images/rows.png" alt="Four rows, one from each channel: the rounded count and relative date the channel page gives, beside the exact viewCount, likeCount, publishedAt, category and duration from the video&#39;s page">
+<em>One video from each channel, with what the channel page said next to what the video&#39;s page said.</em></p>
+<h2>How far off the rounded numbers are</h2>
+<p>119 of the 120 rounded counts were lower than the exact ones. The one that matched had 768 views, too few to round. The median gap was 518 views, 0.8% of the video&#39;s count. On the biggest videos it ran to tens of thousands: SN8 was short 99,850, ESA&#39;s &quot;Astronaut Pikachu gets a private tour of the ISS&quot; showed 1.7M for 1,799,423, and SpaceX&#39;s &quot;Starship - The Holy Grail of Rocketry&quot; showed 2.8M for 2,898,289. The largest gap in percent was on a Blue Origin video, 11,000 for 11,977, 8.2%.</p>
+<p>Rounding also makes different videos look the same. The channel pages gave the 120 videos 106 different view counts. The video pages gave 120. Two SpaceX videos both read 2.3M, and they were 70,677 views apart.</p>
+<p><img src="images/ties.png" alt="Twelve rounded figures that each stand for two or three videos, with the exact counts behind each: SpaceX 2,300,000 is 2,326,761 and 2,397,438, Blue Origin 11,000 is 11,148, 11,651 and 11,977">
+<em>Every rounded figure in the run that covered more than one video.</em></p>
+<p>Dates are worse. A channel page gives &quot;1y ago&quot; or &quot;2mo ago&quot;, so without the video&#39;s page the scraper has to turn that into a date and flag it as approximate. Against the real publish days, those dates were off by a median of 19 days. 29 of 120 were off by more than a month, and five SpaceX videos by close to a year: &quot;Starship&#39;s Fifth Flight Test&quot; reads &quot;1y ago&quot;, which works out to 3 November 2025, and was published on 6 November 2024.</p>
+<h2>What the exact figures show</h2>
+<p>With likes on every row you can compare channels that are nothing alike in size. NASA has 15.1M subscribers and Blue Origin 311,000, but per view Blue Origin&#39;s audience likes more. The median video on SpaceX got 3.34 likes per 100 views, Blue Origin 3.24, NASA 2.48 and ESA 2.22.</p>
+<p><img src="images/likes.png" alt="Likes per 100 views for each of the latest 30 videos on four channels: SpaceX median 3.34, Blue Origin 3.24, NASA 2.48, ESA 2.22, with videos ranging from under 1 to over 7">
+<em>Exact likes divided by exact views for every video in the run.</em></p>
+<p>The exact counts also show how lopsided a channel can be. ESA&#39;s 30 latest videos had 3,109,187 views between them, and 58% of those were the Pikachu video. Its next best had 124,432. NASA&#39;s top video was its Moon Base update, 1,006,881 views and 11,716 likes. SpaceX&#39;s was the five-year-old SN8 recap.</p>
+<h2>What it cost</h2>
+<p>The listing charges $0.0004 for each video returned and another $0.0008 for each video whose page was read for the exact figures, on the Free and Starter plans. The higher plans pay less. The details-on run was 120 × $0.0004 + 120 × $0.0008 = $0.144. The details-off run was 120 × $0.0004 = $0.048. A channel that can&#39;t be read costs nothing.</p>
+<p>So the exact figures are two thirds of the price. If all you want is to know what a channel posted this week, turn them off, add <code>onlyVideosNewerThan: &quot;7 days&quot;</code>, and pay for the cheap read. Turn them on when the numbers go into a report.</p>
+<h2>Thirty videos, and a day rather than a time</h2>
+<p>Thirty is the most a channel page shows, so it&#39;s the most you get. For NASA that&#39;s April to October 2026 out of the 6,100 videos YouTube lists for it. SpaceX posts far less, and its 30 go back to October 2020. Every row carries <code>channelVideoCount</code> so you can tell which case you&#39;re in.</p>
+<p>Only 35 of the 120 rows had the publish time and a category. The other 85 had the publish day at midnight UTC, flagged with <code>publishedAtIsApproximate: true</code>, and <code>category: null</code>. YouTube sends the time and category in data it holds back from most requests from datacenter addresses. The day is right, and for a monthly chart it&#39;s enough. Subscriber counts are YouTube&#39;s rounded figure on every row, 15.1M for NASA, flagged the same way.</p>
+<p>9 videos came back with no description. And the handle has to be the channel&#39;s real one. My first attempt used @esa, which isn&#39;t ESA&#39;s handle: it came back as a <code>not_found</code> row, the run still succeeded, and the other three channels were read and charged as normal.</p>
+<h2>Make it your channels</h2>
+<p>The example repo, <a href="https://github.com/simple-actor/youtube-channel-stats-scraper">youtube-channel-stats-scraper</a>, takes any number of channels, prints each one&#39;s top videos and median likes per 100 views, and writes every video to <code>videos.csv</code>, in Node and in Python. Swap in your own channel and the three you compete with, a set of creators you&#39;re thinking of sponsoring, or the brand channels in your trade, and run it once a month. Store <code>channelId</code>, not the handle: a handle can change, the id can&#39;t. The scraper is at <a href="https://apify.com/simple.actor/youtube-channel-videos">apify.com/simple.actor/youtube-channel-videos</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
