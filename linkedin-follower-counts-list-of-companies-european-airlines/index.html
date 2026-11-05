@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to get LinkedIn follower counts for a list of companies (15 European airlines)</title>
+<meta name="description" content="Follower counts, size and headquarters for 15 European airlines from LinkedIn, for 1.7 cents. Aer Lingus has an eighth of British Airways' followers and more reactions a post.">
+<link rel="canonical" href="https://simple-actor.github.io/linkedin-follower-counts-list-of-companies-european-airlines/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to get LinkedIn follower counts for a list of companies (15 European airlines)">
+<meta property="og:description" content="Follower counts, size and headquarters for 15 European airlines from LinkedIn, for 1.7 cents. Aer Lingus has an eighth of British Airways' followers and more reactions a post.">
+<meta property="og:url" content="https://simple-actor.github.io/linkedin-follower-counts-list-of-companies-european-airlines/">
+<meta property="og:image" content="https://simple-actor.github.io/linkedin-follower-counts-list-of-companies-european-airlines/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-05">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to get LinkedIn follower counts for a list of companies (15 European airlines)","description":"Follower counts, size and headquarters for 15 European airlines from LinkedIn, for 1.7 cents. Aer Lingus has an eighth of British Airways' followers and more reactions a post.","datePublished":"2026-11-05","url":"https://simple-actor.github.io/linkedin-follower-counts-list-of-companies-european-airlines/","image":"https://simple-actor.github.io/linkedin-follower-counts-list-of-companies-european-airlines/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">November 5, 2026</p>
+<h1>How to get LinkedIn follower counts for a list of companies (15 European airlines)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="Aer Lingus has an eighth of British Airways' LinkedIn followers. Its posts get more reactions. 15 airlines, 8,187,096 followers, 1.7 cents." width="1000" height="420">
+<p>British Airways has 1,298,508 followers on LinkedIn. Aer Lingus has 159,655, about an eighth as many. Yet Aer Lingus&#39;s typical post drew more reactions: a median of 435.5, against 349 for British Airways.</p>
+<p>I only saw that because I had both numbers in one table, for fifteen airlines, read on the same morning. That&#39;s the job here: a list of companies in, one row per company out, with the follower count, the declared size, the headquarters and the latest posts.</p>
+<h2>Fifteen rows, one request each</h2>
+<p>I build and run a LinkedIn company scraper on Apify. It reads the page LinkedIn shows a logged-out visitor at <code>linkedin.com/company/&lt;slug&gt;</code>, so there&#39;s no login, no cookie and no API key. One page a company carries the record and its latest posts, about ten of them.</p>
+<p>I gave it fifteen European airlines on the morning of 5 November, with <code>outputFormat</code> set to <code>company</code> so each airline came back as one row with its posts nested inside. In Node:</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/linkedin-company-posts&#39;)
+  .call({ companies: [&#39;british-airways&#39;, &#39;lufthansa&#39;, &#39;klm&#39;],
+          outputFormat: &#39;company&#39; });
+const { items } = await client.dataset(run.defaultDatasetId)
+  .listItems();
+for (const c of items) {
+  if (c.error) { console.warn(c.companySlug, c.error); continue; }
+  console.log(c.companyName, c.followers, c.companySize);
+}
+</code></pre>
+<p>The first run took 86 seconds for fifteen slugs. Twelve were read. Three came back as <code>not_found</code> rows. Between them, the fifteen airlines I ended up with have 8,187,096 followers.</p>
+<p><img src="images/rows.png" alt="Fifteen rows sorted by followers: company name, follower count, declared size, employee profiles on LinkedIn, headquarters and founding year, with three founding years null"></p>
+<p><em>The fifteen company records, from British Airways&#39; 1,298,508 followers down to Aer Lingus&#39;s 159,655.</em></p>
+<p>Each row also carries the tagline, the full About-us text, the logo, the website, the industry, the organisation type, the specialities and a postal address. Two size columns sit side by side and mean different things. <code>companySize</code> is the band the company declares, &quot;10,001+ employees&quot; for British Airways. <code>employeesOnLinkedIn</code> is how many profiles LinkedIn ties to it: 32,981.</p>
+<h2>The slug is not the brand name</h2>
+<p>Three of my first fifteen guesses were wrong in the safe way. <code>virgin-atlantic</code>, <code>wizz-air</code> and <code>norwegian</code> have no company page, so each came back as a <code>not_found</code> row and wasn&#39;t charged. The real ones are <code>virgin-atlantic-airways</code>, <code>wizzair</code> and <code>norwegian-air-shuttle</code>.</p>
+<p>The fourth was wrong in the expensive way. <code>sas</code> is a real page. It belongs to SAS the software company in Cary, North Carolina, with 992,627 followers, and it came back as a normal, charged row. If I&#39;d only been reading the follower column, Scandinavian Airlines would have ranked third, ahead of Ryanair.</p>
+<p>So I ran a second batch of eight candidate slugs. That one took 33 seconds. <code>sas-scandinavian-airlines</code> turned out to be a lookalike page with 1,059 followers, filed under Hospitals and Health Care. <code>flysas</code> is the airline: 208,563 followers, Airlines and Aviation, Solna.</p>
+<p><img src="images/slugs.png" alt="Three company pages that look like SAS: the software company at /company/sas, a lookalike at /company/sas-scandinavian-airlines and the airline at /company/flysas, with their followers, industry, headquarters and website"></p>
+<p><em>Three slugs, three different companies. The industry and website columns are what gave the first two away.</em></p>
+<p>The check that catches this costs nothing: look at <code>industry</code> and <code>website</code> before you trust the follower count.</p>
+<h2>Followers don&#39;t predict reactions</h2>
+<p>With the posts in the same row, I divided each airline&#39;s median reactions per post by its followers. I left out reposts, because their reactions belong to whoever wrote the original, and posts where LinkedIn showed no count.</p>
+<p><img src="images/reactions.png" alt="Bar chart of median reactions per 1,000 followers: Aer Lingus 2.73, Finnair 1.51, SWISS 1.27, SAS 1.13, down to British Airways 0.27, TAP Air Portugal 0.23 and Ryanair 0.16"></p>
+<p><em>Reactions on a typical post for every 1,000 followers, from 158 posts.</em></p>
+<p>Aer Lingus gets 2.73 reactions per 1,000 followers. Ryanair, with 920,161 followers, gets 0.16, seventeen times fewer. The two largest pages, British Airways and Lufthansa, sit near the bottom at 0.27 and 0.30.</p>
+<p>How often they post varies just as much. KLM&#39;s latest 10 posts cover 9.8 days, about seven a week. Aer Lingus&#39;s 11 go back 149 days, and Virgin Atlantic&#39;s 10 go back 356 days, nearly a year. A page that posts once a month may simply be posting its best material. I can&#39;t tell that from ten posts, but I can see which pages to look at more closely.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.0010 per company read on Apify&#39;s Free and Starter plans, $0.0009 on Scale and $0.00085 on Business and above. Posts are free, and a company that can&#39;t be read isn&#39;t charged.</p>
+<p>Across both runs, 17 companies were read: $0.017 on the Free plan. Two of those were the wrong SAS pages, so the fifteen airlines themselves come to $0.015. The six <code>not_found</code> slugs cost nothing.</p>
+<h2>Where the rows need a second look</h2>
+<p>The names arrive as LinkedIn writes them, and once as LinkedIn encodes them. Ryanair&#39;s came back as <code>Ryanair - Europe&amp;#39;s Favourite Airline</code>, with the apostrophe still an HTML entity. Decode the names before they go into a spreadsheet.</p>
+<p><code>website</code> is whatever the company typed into LinkedIn. For thirteen airlines that was the main site. KLM&#39;s is a short link, <code>klmf.ly/R05uLo</code>, and easyJet&#39;s is its careers site. Three airlines, British Airways, SWISS and Wizz Air, give no founding year, so <code>foundedYear</code> is null.</p>
+<p>The posts are only the latest ten or so: between 10 and 12 per airline here, because that&#39;s what LinkedIn shows a logged-out visitor, and there&#39;s no way to page further. Of the 158 posts, 18 had no comment count shown and 8 of the airlines&#39; own posts had no reaction count. Those are null, not zero. There&#39;s no comment text and no breakdown of reactions by type.</p>
+<h2>Make it your list</h2>
+<p>The example repo, <a href="https://github.com/simple-actor/linkedin-company-followers-scraper">linkedin-company-followers-scraper</a>, takes any number of slugs and prints each company&#39;s followers, size, headquarters, posts per week and median reactions, then writes them to <code>companies.csv</code>, in Node and in Python. Put in your own list: the accounts your sales team is chasing, the competitors in your trade, the suppliers in your town. Take each slug from the address bar rather than guessing, and check <code>industry</code> on the first run. The scraper is at <a href="https://apify.com/simple.actor/linkedin-company-posts">apify.com/simple.actor/linkedin-company-posts</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
