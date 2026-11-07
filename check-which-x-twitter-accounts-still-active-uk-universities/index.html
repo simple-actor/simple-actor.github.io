@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to check which X (Twitter) accounts in a list are still active (24 UK universities)</title>
+<meta name="description" content="5 of 23 Russell Group universities posted on X in the last month and 9 haven't in over a year. One 31-second run for 1.15 cents, and two handles that weren't theirs.">
+<link rel="canonical" href="https://simple-actor.github.io/check-which-x-twitter-accounts-still-active-uk-universities/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to check which X (Twitter) accounts in a list are still active (24 UK universities)">
+<meta property="og:description" content="5 of 23 Russell Group universities posted on X in the last month and 9 haven't in over a year. One 31-second run for 1.15 cents, and two handles that weren't theirs.">
+<meta property="og:url" content="https://simple-actor.github.io/check-which-x-twitter-accounts-still-active-uk-universities/">
+<meta property="og:image" content="https://simple-actor.github.io/check-which-x-twitter-accounts-still-active-uk-universities/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-07">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to check which X (Twitter) accounts in a list are still active (24 UK universities)","description":"5 of 23 Russell Group universities posted on X in the last month and 9 haven't in over a year. One 31-second run for 1.15 cents, and two handles that weren't theirs.","datePublished":"2026-11-07","url":"https://simple-actor.github.io/check-which-x-twitter-accounts-still-active-uk-universities/","image":"https://simple-actor.github.io/check-which-x-twitter-accounts-still-active-uk-universities/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">November 7, 2026</p>
+<h1>How to check which X (Twitter) accounts in a list are still active (24 UK universities)</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="5 of 23 Russell Group universities posted on X in the last month. 9 haven't posted in over a year. 23 accounts, 31 seconds, 1.15 cents." width="1000" height="420">
+<p>The first answer I got said the University of Oxford hadn&#39;t posted on X since 26 June 2014.</p>
+<p>It was wrong, and it was my fault. I&#39;d typed <code>OxfordUni</code> from memory. That handle, which X writes as <code>oxforduni</code>, belongs to an account called &quot;Oxford Uni Students&quot;, with 521 followers and 37 posts, the last one about the state of student houses. The university is <code>@UniofOxford</code>, with 1,056,189 followers, and it posted the day before I looked.</p>
+<p>That&#39;s the first thing to know about checking a list of X accounts: before you ask whether an account is active, check it&#39;s the account you meant.</p>
+<h2>The run</h2>
+<p>I build and run an X profile scraper on Apify. It reads what X shows a logged-out visitor, so there&#39;s no login and no API key. Set <code>outputFormat</code> to <code>profile</code> and each handle comes back as one row: the account record, its latest five posts, and three fields made for this job, <code>latestPostAt</code>, <code>daysSinceLatestPost</code> and <code>timelineWithheld</code>.</p>
+<p>On the morning of 7 November I gave it the X handles I had for the 24 universities of the Russell Group. In Node:</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/x-profile-posts&#39;)
+  .call({ handles: [&#39;UniofOxford&#39;, &#39;ucl&#39;, &#39;QUBelfast&#39;],
+          outputFormat: &#39;profile&#39; });
+const { items } = await client.dataset(run.defaultDatasetId)
+  .listItems();
+for (const a of items) {
+  if (a.error) { console.warn(a.inputUrl, a.error); continue; }
+  console.log(a.userName, a.followers, a.daysSinceLatestPost);
+}
+</code></pre>
+<p>It took 31 seconds and returned 24 rows, one per handle. Twenty-three were read. The 24th, <code>@EdinburghUni</code>, came back as a row with <code>error: &quot;protected&quot;</code>: its posts are visible only to approved followers. The row can&#39;t tell me whether that&#39;s the university&#39;s own account locked or a handle that belongs to someone else, so I&#39;ve left Edinburgh out of the count.</p>
+<h2>Two handles that weren&#39;t the university</h2>
+<p>Oxford wasn&#39;t the only slip. <code>@warwickuni</code> has 656 followers and exactly one post, pinned since 17 February 2023, telling visitors the university has moved to <code>@uniofwarwick</code>. I ran the two right handles again on their own, six seconds.</p>
+<p><img src="images/handles.png" alt="The two wrong handles beside the right ones: @oxforduni, Oxford Uni Students, 521 followers, 37 posts, last post 2014-06-26, against @UniofOxford with 1,056,189 followers and a post on 2026-11-06; @warwickuni with 656 followers and 1 post against @uniofwarwick with 89,516 followers. Below, @warwickuni&#39;s pinned post pointing to @uniofwarwick"></p>
+<p><em>Follower count and post count give a wrong handle away at a glance. The blue check doesn&#39;t: only 6 of the 23 right accounts carry it.</em></p>
+<p>Both wrong handles were real accounts, so both were read and charged. Nothing in the run flagged them. What did was the row itself: a university with a few hundred followers is not a university&#39;s main account. Look at <code>name</code>, <code>followers</code> and <code>statusesCount</code> on the first run, before you trust any dates.</p>
+<h2>Who still posts</h2>
+<p>With the right handles, here is how recently each of the 23 last posted, as <code>daysSinceLatestPost</code> counted on the day of the read:</p>
+<p><img src="images/lastpost.png" alt="Bar chart of days since each university last posted on X: Cambridge, Imperial, Durham and Oxford 0, Queen Mary 2, King&#39;s 42, Birmingham 71, Nottingham 73, Southampton 137, Newcastle 252, Queen&#39;s Belfast 270, Glasgow 298, LSE 303, Bristol 309, Cardiff 423, Liverpool and York 449, Sheffield 451, Manchester 617, Leeds 652, Warwick 655, Exeter 707, UCL 716. Nottingham, Newcastle and Queen&#39;s Belfast are marked as goodbye posts"></p>
+<p><em>Five posted in the last 30 days. Nine haven&#39;t posted in over a year. The middle university, Glasgow, last posted 298 days ago.</em></p>
+<p>Oxford, Cambridge, Imperial and Durham had all posted the day before. Queen Mary posted two days before. Then there&#39;s a long drop. UCL has 138,594 followers and its last post went up on 20 November 2024, 716 days earlier. Exeter&#39;s was 707 days earlier, Warwick&#39;s 655, Leeds&#39; 652, Manchester&#39;s 617.</p>
+<h2>Read the last post, not only its date</h2>
+<p>Nottingham sits at 73 days, which on dates alone looks like a slow account, not a dead one. Its newest post, pinned, reads: &quot;We no longer post on this account, but it remains active for monitoring purposes.&quot; Newcastle&#39;s, from 27 February 2026: &quot;We will no longer be posting content to our X account.&quot; Queen&#39;s University Belfast&#39;s, from 9 February 2026: &quot;We are currently not using X (formerly Twitter).&quot;</p>
+<p>So three of the 23 latest posts are goodbyes, and each one resets the clock. With a date rule of &quot;posted in the last 90 days&quot;, Nottingham passes as live. A fourth comes close: Leeds&#39; last post, from 23 January 2025, says the university had &quot;experienced a huge drop in engagement due to developments on the platform&quot;.</p>
+<p>The account row carries the posts it was judged on, under <code>posts</code>, so the fix is cheap: sort them by <code>timestamp</code> and read the newest one&#39;s text. The example scripts flag a newest post that says &quot;no longer&quot;, &quot;not using X&quot; or &quot;new handle&quot;. It&#39;s a blunt match, but it caught all three goodbyes and Warwick&#39;s old handle.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.0005 per profile read, and nothing per post. The 23 accounts read in the first run came to $0.0115, 1.15 cents. Edinburgh&#39;s protected row wasn&#39;t charged. Correcting the two handles cost another $0.001.</p>
+<p>At that price, a weekly check of 300 accounts costs 15 cents. The listing says a list is read at about two and a half seconds an account, so a thousand handles take about forty minutes; these 24 went faster.</p>
+<h2>What a date can&#39;t tell you</h2>
+<p>Five posts is all X shows a logged-out visitor, and there&#39;s no next page. That&#39;s enough to say when an account last posted, but not how often it posts.</p>
+<p>Reposts don&#39;t count. The logged-out timeline carries an account&#39;s own posts and replies, not its reposts of others, so an account that only reposts will read as silent.</p>
+<p>X sometimes shows a profile and none of its posts. The scraper reads it again from another address, and if the posts are still missing the row says <code>timelineWithheld: true</code> with no posts, and isn&#39;t charged. None of my 23 did that; every one returned five posts. The listing says it happens most to very small or new accounts.</p>
+<p>And a protected account is a dead end. You get the <code>protected</code> row and nothing else.</p>
+<h2>Make it your list</h2>
+<p>The example repo, <a href="https://github.com/simple-actor/x-twitter-account-checker">x-twitter-account-checker</a>, takes any list of handles and prints each account&#39;s followers, last post date, days since, a status (active, quiet, silent over a year) and the first line of its newest post, flags goodbyes, and writes everything to <code>accounts.csv</code>, in Node and in Python. Swap the universities for your own list: the councils in your county, the brands in a trade show&#39;s exhibitor list, the creators in an old campaign spreadsheet. Check the names and follower counts first, then the dates, then the last post. The scraper is at <a href="https://apify.com/simple.actor/x-profile-posts">apify.com/simple.actor/x-profile-posts</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
