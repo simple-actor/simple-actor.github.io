@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How often do brands post on Instagram? 8 outdoor brands' last 12 posts compared</title>
+<meta name="description" content="Columbia's last 12 Instagram posts went back 6.5 days. Salomon's went back 46. Eight outdoor brands, 96 posts, read in one 65-second run for about 7 cents.">
+<link rel="canonical" href="https://simple-actor.github.io/how-often-brands-post-on-instagram-outdoor-brands/">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="Simple Actor" href="/feed.xml">
+<meta property="og:site_name" content="Simple Actor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How often do brands post on Instagram? 8 outdoor brands' last 12 posts compared">
+<meta property="og:description" content="Columbia's last 12 Instagram posts went back 6.5 days. Salomon's went back 46. Eight outdoor brands, 96 posts, read in one 65-second run for about 7 cents.">
+<meta property="og:url" content="https://simple-actor.github.io/how-often-brands-post-on-instagram-outdoor-brands/">
+<meta property="og:image" content="https://simple-actor.github.io/how-often-brands-post-on-instagram-outdoor-brands/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="article:published_time" content="2026-11-13">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How often do brands post on Instagram? 8 outdoor brands' last 12 posts compared","description":"Columbia's last 12 Instagram posts went back 6.5 days. Salomon's went back 46. Eight outdoor brands, 96 posts, read in one 65-second run for about 7 cents.","datePublished":"2026-11-13","url":"https://simple-actor.github.io/how-often-brands-post-on-instagram-outdoor-brands/","image":"https://simple-actor.github.io/how-often-brands-post-on-instagram-outdoor-brands/images/cover.png","author":{"@type":"Organization","name":"Simple Actor","url":"https://github.com/simple-actor"}}</script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="site"><a class="brand" href="/"><svg width="22" height="26" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420"><path d="M 260.6 105.0 A 70 70 0 1 0 187.8 208.9" fill="none" stroke="currentColor" stroke-width="40"/>
+<path d="M 212.2 211.1 A 70 70 0 1 1 139.4 315.0" fill="none" stroke="#3FA58F" stroke-width="40"/></svg>Simple Actor</a>
+<nav><a href="https://github.com/simple-actor">GitHub</a><a href="https://apify.com/simple.actor">Apify</a></nav></header>
+<main class="post">
+<article>
+<p class="meta">November 13, 2026</p>
+<h1>How often do brands post on Instagram? 8 outdoor brands' last 12 posts compared</h1>
+<p class="disclosure"><em>I wrote this with an AI assistant. The runs, numbers and code are real, and I checked them.</em></p>
+<img class="cover" src="images/cover.png" alt="Columbia's last 12 Instagram posts went back 6.5 days. Salomon's went back 46. 8 brands, 96 posts, 7 cents." width="1000" height="420">
+<p>Columbia Sportswear&#39;s latest 12 Instagram posts went back six and a half days. Salomon&#39;s went back 46. Same industry, same season, the same week of November, and one of them posts seven times as often as the other.</p>
+<p>I read the newest posts of eight outdoor brands this morning to answer a question I get asked in different words a lot: how often should a brand like ours be posting? The honest version of the answer starts with how often everyone else does.</p>
+<h2>The run</h2>
+<p>I build and run an Instagram profile scraper on Apify. It needs no login and no cookies. You give it usernames, and for each account it returns the profile (followers, bio, verification) and the latest 12 posts, each with its <code>type</code>, <code>timestamp</code> and caption. With <code>outputFormat</code> set to <code>profile</code>, each account is one row with its posts nested under <code>posts</code>:</p>
+<pre><code class="language-js">import { ApifyClient } from &#39;apify-client&#39;;
+const client = new ApifyClient({ token: process.env.APIFY_TOKEN });
+const run = await client.actor(&#39;simple.actor/instagram-profile-posts&#39;)
+  .call({ usernames: [&#39;patagonia&#39;, &#39;rei&#39;], outputFormat: &#39;profile&#39; });
+const { items } = await client.dataset(run.defaultDatasetId)
+  .listItems();
+for (const a of items) {
+  const oldest = a.posts?.at(-1)?.timestamp;
+  console.log(a.username, a.followersCount, oldest);
+}
+</code></pre>
+<p>I gave it ten handles. The run took 65 seconds and read nine of them. Eight were the brands I wanted: Patagonia, The North Face, Arc&#39;teryx, Columbia, REI, Salomon, Black Diamond and Marmot. That&#39;s 96 posts. What happened to the other two is further down.</p>
+<p><img src="images/pace.png" alt="Bar chart of how many days each brand&#39;s latest 12 Instagram posts reach back: Columbia 6.5, The North Face 10.5, REI 11.5, Patagonia 13.3, Black Diamond 17.6, Arc&#39;teryx 27.6, Marmot 42.4, Salomon 46.0"></p>
+<p><em>How far back 12 posts go. The shorter the bar, the more often the brand posts.</em></p>
+<p>The measure is simple. Take the oldest of the 12 posts, count the days from it to the run, and divide 12 by that. Columbia comes out at 12.9 posts a week, and all 12 of its posts were from the last seven days. The North Face posted 8.0 a week, REI 7.3, Patagonia 6.3. Patagonia posted on 9 of the 10 days from 3 to 12 November. Black Diamond is at 4.8. Then there is a gap down to Arc&#39;teryx at 3.0, Marmot at 2.0 and Salomon at 1.8.</p>
+<p>Size doesn&#39;t explain it. Columbia has 737,739 followers, the fewest of the eight bar Marmot, and posts the most. The North Face and Patagonia have 5.6 and 5.5 million and sit in the middle.</p>
+<h2>The average hides the pattern</h2>
+<p>Arc&#39;teryx shows why one number is not enough. Its 12 posts reach back 27.6 days, which reads as three a week. But 9 of the 12 went up in the last seven days. Before that there were two posts at the turn of the month and one on 16 October, two weeks earlier. That&#39;s a launch burst, not a schedule. That week&#39;s posts introduce a new climbing harness and mark 25 years since its first ski and snowboard shell.</p>
+<p>Columbia&#39;s week had a burst of its own. Three of its posts are single images that went up within 90 seconds of each other on 10 November, each captioned &quot;Introducing Camp Amaze&quot;. They count as three posts here, which is part of why Columbia&#39;s number is so high.</p>
+<p>Salomon is the opposite case. Five of the 12 posts on its grid are owned by other accounts: four by its running account, <code>salomonrunning</code>, and one by a clothing brand it made a collection with. The newest post owned by <code>salomon</code> itself was from 3 November. The scraper reads the owner off each post, in <code>ownerUsername</code>, so a collaboration is credited to the account that actually posted it. Across all eight brands, 11 of the 96 posts were collaborations owned by someone else.</p>
+<p><img src="images/formats.png" alt="Stacked bars of each brand&#39;s 12 latest posts split into videos, carousels and single images, with a column for posts owned by another account. Arc&#39;teryx: 2 videos, 10 carousels. Black Diamond: 7 videos, 5 carousels. All eight: 52 carousels, 38 videos, 6 single images"></p>
+<p><em>What the posts were. Carousels outnumber videos, and single images are nearly gone.</em></p>
+<p>The format mix surprised me more than the pace. 52 of the 96 posts were carousels, 38 were videos and only 6 were a single image. Arc&#39;teryx posted ten carousels out of 12, with 74 slides between them, and one carousel held 14. Black Diamond leaned the other way with 7 videos. If your brand still posts one photo at a time, you are doing something these eight have almost stopped doing.</p>
+<h2>What it cost</h2>
+<p>The scraper charges $0.008 per profile read, whatever the number of posts. An account that can&#39;t be read is not charged. This run read nine profiles, so a caller would pay 9 × $0.008 = $0.072, about 7 cents. Eight of those were the brands. The ninth was a mistake I paid for.</p>
+<h2>Two of my ten handles were wrong</h2>
+<p>I typed the handles from memory. <code>fjallraven</code> came back as a row with <code>error: &quot;not_found&quot;</code> and the description &quot;No such account&quot;. It wasn&#39;t charged, and the run still finished as SUCCEEDED, with its status message saying 9 of 10 accounts were read and 1 answered with an error row.</p>
+<p>The handle I guessed for Mammut was worse, because it worked. It read an account with 140 followers, no posts returned and no verification badge. That&#39;s somebody&#39;s account, just not the brand&#39;s, and it cost a profile read like any other. Every brand in this post has <code>isVerified: true</code> and a follower count in the hundreds of thousands or millions. Check those two fields before you trust a handle someone typed.</p>
+<h2>What the rows don&#39;t tell you</h2>
+<p><img src="images/row.png" alt="One account row in the profile format for Arc&#39;teryx: username, fullName, followersCount 2164030, followsCount 1237, isVerified true, isProfilePartial true, postsCount null, postsReturned 12, and the first post with type Sidecar, a timestamp, childPostCount 14, likesCount null, commentsCount null and isPostPartial true"></p>
+<p><em>One row as the scraper returns it. The orange nulls are what Instagram leaves out for a logged-out reader.</em></p>
+<p>There are no likes or comments in this run. Instagram now answers its logged-out endpoints with &quot;Page Not Found&quot;, so the scraper reads the public profile page itself. That page carries the profile and the 12 posts but no like or comment counts. All 96 posts came back with <code>likesCount</code> and <code>commentsCount</code> as null and <code>isPostPartial: true</code>. The scraper marks it so a null is never read as zero. So this measures how often a brand posts, not how well the posts do.</p>
+<p><code>postsCount</code>, the account&#39;s lifetime total, came back null for all eight, so I can&#39;t tell you how many posts each brand has made in all.</p>
+<p>And 12 posts is the limit. That&#39;s what Instagram shows a logged-out reader of the grid, and there is no next page to ask for. For Salomon, 12 posts were six and a half weeks. For Columbia they were less than one. To see a frequent poster over a whole month, run the check every few days and keep the rows. The scraper&#39;s <code>onlyPostsNewerThan</code> input keeps only posts newer than a window you set, such as <code>&quot;3 days&quot;</code>, and refuses with a <code>window_too_wide</code> row rather than hand you a partial answer when the window reaches further back than it can see.</p>
+<h2>Make it your own list</h2>
+<p>The example repo, <a href="https://github.com/simple-actor/instagram-posting-frequency-checker">instagram-posting-frequency-checker</a>, takes a file of usernames and prints each account&#39;s followers, how many days its last 12 posts span, posts a week, posts in the last seven days and the mix of videos, carousels and single images, and flags any account that isn&#39;t verified. It writes the lot to <code>accounts.csv</code>, in Node and in Python. Swap my outdoor brands for yours and your competitors: the coffee roasters in your city, the gyms on your street, every brand your clients compare you with. Run it on a Monday each week and you&#39;ll see who has a schedule and who posts in bursts. The scraper is at <a href="https://apify.com/simple.actor/instagram-profile-posts">apify.com/simple.actor/instagram-profile-posts</a>.</p>
+
+</article>
+</main>
+<footer class="site"><p>Simple Actor. Web scrapers I build, run and fix in production.</p><p><a href="https://github.com/simple-actor">GitHub</a> · <a href="https://apify.com/simple.actor">Apify Store</a> · <a href="/feed.xml">RSS</a></p></footer>
+</body>
+</html>
